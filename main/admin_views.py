@@ -68,6 +68,20 @@ def edit_profile(request):
             'github': request.POST.get('github'),
             'linkedin': request.POST.get('linkedin'),
         }
+        
+        if profile.get('resume_url'):
+            profile_data['resume_url'] = profile['resume_url']
+            
+        resume_file = request.FILES.get('resume')
+        if resume_file:
+            upload_result = cloudinary.uploader.upload(
+                resume_file, 
+                public_id='portfolio_resume',
+                overwrite=True,
+                resource_type='auto'
+            )
+            profile_data['resume_url'] = upload_result['secure_url']
+            
         if profile.get('_id'):
             db.profile.update_one({'_id': profile['_id']}, {'$set': profile_data})
         else:

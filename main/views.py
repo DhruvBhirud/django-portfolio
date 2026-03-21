@@ -29,6 +29,7 @@ def index(request):
         'email': profile.get('email', 'bhiruddhruv@gmail.com'),
         'github': profile.get('github', 'https://github.com/yourusername'),
         'linkedin': profile.get('linkedin', 'https://linkedin.com/in/yourusername'),
+        'resume_url': profile.get('resume_url', ''),
     }
     return render(request, 'main/index.html', context)
 

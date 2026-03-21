@@ -2,7 +2,7 @@
 {% block content %}
     <h1>Edit Profile</h1>
     <div class="card">
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <label>Name:</label>
             <input type="text" name="name" value="{{ profile.name|default:'' }}" required>
@@ -10,18 +10,25 @@
             <label>Title:</label>
             <input type="text" name="title" value="{{ profile.title|default:'' }}" required>
             
-            <label>Bio:</label>
-            <textarea name="bio" rows="4">{{ profile.bio|default:'' }}</textarea>
+            <label>Bio (Short description for hero section):</label>
+            <textarea name="bio" rows="4" required>{{ profile.bio|default:'' }}</textarea>
             
             <label>Email:</label>
-            <input type="email" name="email" value="{{ profile.email|default:'' }}">
+            <input type="email" name="email" value="{{ profile.email|default:'' }}" required>
             
-            <label>GitHub URL:</label>
+            <label>GitHub:</label>
             <input type="url" name="github" value="{{ profile.github|default:'' }}">
             
-            <label>LinkedIn URL:</label>
+            <label>LinkedIn:</label>
             <input type="url" name="linkedin" value="{{ profile.linkedin|default:'' }}">
             
+            <label>Resume (PDF format):</label>
+            {% if profile.resume_url %}
+            <p style="margin: 0 0 10px 0; font-size: 14px;">Current Resume: <a href="{{ profile.resume_url }}" target="_blank">View PDF</a></p>
+            {% endif %}
+            <input type="file" name="resume" accept=".pdf">
+            
+            <br><br>
             <button type="submit">Save Profile</button>
         </form>
     </div>

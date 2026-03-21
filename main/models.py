@@ -13,9 +13,9 @@ class Profile(models.Model):
     title = models.CharField(max_length=100)
     bio = models.TextField()
     email = models.EmailField()
-    github = models.URLField()
-    linkedin = models.URLField()
-
+    github = models.URLField(blank=True, null=True)
+    linkedin = models.URLField(blank=True, null=True)
+    resume_url = models.URLField(blank=True, null=True)
     class Meta:
         managed = False
 
