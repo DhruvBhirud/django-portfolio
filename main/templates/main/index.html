@@ -2,9 +2,11 @@
 {% block title %}{{ name }} - Portfolio{% endblock %}
 
 {% block content %}
+<!-- Global Canvas Background -->
+<canvas id="demo-canvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none;"></canvas>
+
 <!-- Hero -->
-<section class="hero" id="large-header" style="position: relative; overflow: hidden; min-height: 100vh; display: flex; align-items: center; justify-content: center;">
-    <canvas id="demo-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;"></canvas>
+<section class="hero" id="about" style="position: relative; min-height: 100vh; display: flex; align-items: center; justify-content: center;">
     <div class="hero-content" style="position: relative; z-index: 2;">
         <h1>Hi, I'm <span class="highlight">{{ name }}</span></h1>
         <p class="subtitle">{{ title }}</p>
@@ -21,7 +23,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.18.0/easing/EasePack.min.js"></script>
 <script>
     (function () {
-        var width, height, largeHeader, canvas, ctx, points, target, animateHeader = true;
+        var width, height, canvas, ctx, points, target, animateHeader = true;
 
         // Ensure everything runs after DOM loads
         document.addEventListener("DOMContentLoaded", function() {
@@ -31,9 +33,8 @@
         });
 
         function initHeader() {
-            largeHeader = document.getElementById('large-header');
-            width = largeHeader.offsetWidth;
-            height = largeHeader.offsetHeight || window.innerHeight;
+            width = window.innerWidth;
+            height = window.innerHeight;
             target = { x: width / 2, y: height / 2 };
 
             canvas = document.getElementById('demo-canvas');
@@ -94,23 +95,22 @@
         }
 
         function mouseMove(e) {
-            var rect = largeHeader.getBoundingClientRect();
             var posx = 0;
             var posy = 0;
-            if (e.pageX || e.pageY) {
-                posx = e.pageX;
-                posy = e.pageY;
-            } else if (e.clientX || e.clientY) {
-                posx = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-                posy = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+            if (e.clientX || e.clientY) {
+                posx = e.clientX;
+                posy = e.clientY;
+            } else if (e.pageX || e.pageY) {
+                posx = e.pageX - window.pageXOffset;
+                posy = e.pageY - window.pageYOffset;
             }
-            target.x = posx - rect.left;
-            target.y = posy - rect.top;
+            target.x = posx;
+            target.y = posy;
         }
 
         function resize() {
-            width = largeHeader.offsetWidth;
-            height = largeHeader.offsetHeight;
+            width = window.innerWidth;
+            height = window.innerHeight;
             canvas.width = width;
             canvas.height = height;
         }
