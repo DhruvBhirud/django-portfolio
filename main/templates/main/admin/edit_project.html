@@ -20,7 +20,7 @@
             <input type="url" name="live_url" value="{{ project.live_url|default:'' }}">
 
             <label>Long Description:</label>
-            <textarea name="long_description" rows="6" required>{{ project.long_description|default:'' }}</textarea>
+            <textarea name="long_description" rows="6">{{ project.long_description|default:'' }}</textarea>
 
             <label>Order (Display sorting priority):</label>
             <input type="number" name="order" value="{{ project.order|default:'0' }}" required>

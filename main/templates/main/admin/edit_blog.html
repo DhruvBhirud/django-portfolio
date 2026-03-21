@@ -18,7 +18,7 @@
             <br><br>
 
             <label>Content:</label>
-            <textarea name="content" rows="15" required>{{ blog.content|default:'' }}</textarea>
+            <textarea name="content" rows="15">{{ blog.content|default:'' }}</textarea>
             
             <label>
                 <input type="checkbox" name="is_published" style="width: auto;" {% if blog.is_published %}checked{% endif %}>
