@@ -36,7 +36,7 @@ nav { display: flex; justify-content: space-between; align-items: center; paddin
 .project-links { display: flex; gap: 1rem; margin-top: 1rem; }
 .project-links a { color: var(--primary); text-decoration: none; font-size: 0.9rem; }
 .skills-grid { display: flex; flex-wrap: wrap; gap: 1rem; }
-.skill-badge { background: var(--card); border: 1px solid #2a2a4a; padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.9rem; }
+.skill-badge { background: var(--card); border: 1px solid #2a2a4a; padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.9rem; cursor: default; user-select: none; }
 .contact-content { text-align: center; }
 .contact-content p { margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--muted); }
 .social-links { margin-top: 1.5rem; display: flex; justify-content: center; gap: 1.5rem; font-size: 1.8rem; }
