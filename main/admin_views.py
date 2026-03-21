@@ -99,3 +99,26 @@ def delete_blog(request, blog_id):
     if request.method == 'POST':
         db.blogs.delete_one({'_id': ObjectId(blog_id)})
     return redirect('admin_blogs')
+
+@admin_required
+def manage_skills(request):
+    db = get_db()
+    
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        if name:
+            db.skills.insert_one({'name': name})
+        return redirect('admin_skills')
+        
+    skills = list(db.skills.find())
+    for s in skills:
+        s['id'] = str(s['_id'])
+        
+    return render(request, 'main/admin/manage_skills.html', {'skills': skills})
+
+@admin_required
+def delete_skill(request, skill_id):
+    db = get_db()
+    if request.method == 'POST':
+        db.skills.delete_one({'_id': ObjectId(skill_id)})
+    return redirect('admin_skills')
