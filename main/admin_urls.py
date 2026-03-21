@@ -16,4 +16,5 @@ urlpatterns = [
     path('projects/add/', admin_views.edit_project, name='admin_project_add'),
     path('projects/edit/<str:project_id>/', admin_views.edit_project, name='admin_project_edit'),
     path('projects/delete/<str:project_id>/', admin_views.delete_project, name='admin_project_delete'),
+    path('upload-image/', admin_views.upload_image, name='admin_upload_image'),
 ]

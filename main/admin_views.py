@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.conf import settings
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime
 from functools import wraps
 from bson import ObjectId
@@ -14,6 +16,19 @@ def admin_required(view_func):
             return redirect('admin_login')
         return view_func(request, *args, **kwargs)
     return _wrapped_view
+
+@csrf_exempt
+@admin_required
+def upload_image(request):
+    """Endpoint for TinyMCE image uploads"""
+    if request.method == 'POST' and request.FILES.get('file'):
+        image_file = request.FILES['file']
+        try:
+            upload_result = cloudinary.uploader.upload(image_file)
+            return JsonResponse({'location': upload_result['secure_url']})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 
 def admin_login(request):
     if request.method == 'POST':

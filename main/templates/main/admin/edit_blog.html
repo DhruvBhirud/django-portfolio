@@ -30,4 +30,17 @@
             <a href="{% url 'admin_blogs' %}" style="margin-left: 10px;">Cancel</a>
         </form>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js"></script>
+    <script>
+      tinymce.init({
+        selector: 'textarea[name="content"]',
+        plugins: 'image link media table code lists',
+        toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | link image | code',
+        images_upload_url: '{% url "admin_upload_image" %}',
+        automatic_uploads: true,
+        height: 600,
+        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.6; }'
+      });
+    </script>
 {% endblock %}

@@ -30,8 +30,8 @@
             {% endif %}
         </div>
         
-        <div class="detail-content" style="white-space: pre-wrap; font-size: 1.1rem; line-height: 1.8;">
-            {{ project.long_description }}
+        <div class="detail-content" style="font-size: 1.1rem; line-height: 1.8;">
+            {{ project.long_description|safe }}
         </div>
     </div>
 </section>
