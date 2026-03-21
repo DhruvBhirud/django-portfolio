@@ -24,6 +24,7 @@ class Project(models.Model):
     """Maps to the 'projects' collection."""
     title = models.CharField(max_length=200)
     description = models.CharField(max_length=500)
+    image_url = models.URLField(blank=True, null=True)
     tech = models.CharField(max_length=200)  # e.g. 'React, Node, MongoDB'
     github_url = models.URLField(blank=True, null=True)
     live_url = models.URLField(blank=True, null=True)

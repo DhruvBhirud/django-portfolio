@@ -5,6 +5,7 @@ from datetime import datetime
 from functools import wraps
 from bson import ObjectId
 from .db import get_db
+import cloudinary.uploader
 
 def admin_required(view_func):
     @wraps(view_func)
@@ -122,3 +123,55 @@ def delete_skill(request, skill_id):
     if request.method == 'POST':
         db.skills.delete_one({'_id': ObjectId(skill_id)})
     return redirect('admin_skills')
+
+@admin_required
+def list_projects(request):
+    db = get_db()
+    projects = list(db.projects.find().sort('order', 1))
+    for p in projects:
+        p['id'] = str(p['_id'])
+    return render(request, 'main/admin/list_projects.html', {'projects': projects})
+
+@admin_required
+def edit_project(request, project_id=None):
+    db = get_db()
+    project = {}
+    if project_id:
+        project = db.projects.find_one({'_id': ObjectId(project_id)})
+        project['id'] = str(project['_id'])
+        
+    if request.method == 'POST':
+        project_data = {
+            'title': request.POST.get('title'),
+            'description': request.POST.get('description'),
+            'tech': request.POST.get('tech'),
+            'github_url': request.POST.get('github_url'),
+            'live_url': request.POST.get('live_url'),
+            'long_description': request.POST.get('long_description'),
+            'order': int(request.POST.get('order', 0)),
+        }
+        
+        # Keep existing image url if editing
+        if project_id and project.get('image_url'):
+            project_data['image_url'] = project['image_url']
+            
+        image_file = request.FILES.get('image')
+        if image_file:
+            upload_result = cloudinary.uploader.upload(image_file)
+            project_data['image_url'] = upload_result['secure_url']
+            
+        if project_id:
+            db.projects.update_one({'_id': ObjectId(project_id)}, {'$set': project_data})
+        else:
+            db.projects.insert_one(project_data)
+            
+        return redirect('admin_projects')
+        
+    return render(request, 'main/admin/edit_project.html', {'project': project})
+
+@admin_required
+def delete_project(request, project_id):
+    db = get_db()
+    if request.method == 'POST':
+        db.projects.delete_one({'_id': ObjectId(project_id)})
+    return redirect('admin_projects')

@@ -133,3 +133,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MONGODB_URI = os.environ.get('MONGODB_URI')
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
+
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+cloudinary.config( 
+  cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME'), 
+  api_key = os.environ.get('CLOUDINARY_API_KEY'), 
+  api_secret = os.environ.get('CLOUDINARY_API_SECRET'),
+  secure = True
+)

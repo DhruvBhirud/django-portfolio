@@ -1,0 +1,42 @@
+{% extends 'main/admin/base_admin.html' %}
+{% block content %}
+    <h1>{% if project.id %}Edit Project{% else %}Add Project{% endif %}</h1>
+    <div class="card">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label>Title:</label>
+            <input type="text" name="title" value="{{ project.title|default:'' }}" required>
+            
+            <label>Short Description:</label>
+            <input type="text" name="description" value="{{ project.description|default:'' }}" required>
+
+            <label>Tech Stack:</label>
+            <input type="text" name="tech" value="{{ project.tech|default:'' }}" required>
+
+            <label>GitHub URL (Optional):</label>
+            <input type="url" name="github_url" value="{{ project.github_url|default:'' }}">
+
+            <label>Live URL (Optional):</label>
+            <input type="url" name="live_url" value="{{ project.live_url|default:'' }}">
+
+            <label>Long Description:</label>
+            <textarea name="long_description" rows="6" required>{{ project.long_description|default:'' }}</textarea>
+
+            <label>Order (Display sorting priority):</label>
+            <input type="number" name="order" value="{{ project.order|default:'0' }}" required>
+
+            <label>Project Image (Cloudinary Upload):</label>
+            {% if project.image_url %}
+            <div style="margin-bottom: 10px;">
+                <img src="{{ project.image_url }}" alt="Current Image" style="max-height: 100px; border-radius: 4px;">
+                <p style="font-size: 14px; margin: 5px 0;">Current Image. Upload a new one to replace.</p>
+            </div>
+            {% endif %}
+            <input type="file" name="image" accept="image/*">
+            
+            <br><br>
+            <button type="submit">Save Project</button>
+            <a href="{% url 'admin_projects' %}" style="margin-left: 10px;">Cancel</a>
+        </form>
+    </div>
+{% endblock %}

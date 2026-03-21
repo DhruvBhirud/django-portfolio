@@ -1,0 +1,41 @@
+{% extends 'main/admin/base_admin.html' %}
+{% block content %}
+    <h1>Manage Projects</h1>
+    <div style="margin-bottom: 20px;">
+        <a href="{% url 'admin_project_add' %}" style="text-decoration: none;">
+            <button>Add New Project</button>
+        </a>
+    </div>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Tech</th>
+                    <th>Order</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in projects %}
+                <tr>
+                    <td>{{ project.title }}</td>
+                    <td>{{ project.tech }}</td>
+                    <td>{{ project.order }}</td>
+                    <td>
+                        <a href="{% url 'admin_project_edit' project.id %}"><button>Edit</button></a>
+                        <form method="post" action="{% url 'admin_project_delete' project.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-danger" onclick="return confirm('Are you sure you want to delete this project?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">No projects found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
