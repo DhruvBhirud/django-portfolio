@@ -49,9 +49,24 @@ def dashboard(request):
     db = get_db()
     project_count = db.projects.count_documents({})
     blog_count = db.blogs.count_documents({})
+    published_blog_count = db.blogs.count_documents({'is_published': True})
+    skill_count = db.skills.count_documents({})
+    
+    recent_blogs = list(db.blogs.find().sort('created_at', -1).limit(5))
+    for b in recent_blogs:
+        b['id'] = str(b['_id'])
+        
+    recent_projects = list(db.projects.find().sort('order', 1).limit(5))
+    for p in recent_projects:
+        p['id'] = str(p['_id'])
+        
     return render(request, 'main/admin/dashboard.html', {
         'project_count': project_count,
-        'blog_count': blog_count
+        'blog_count': blog_count,
+        'published_blog_count': published_blog_count,
+        'skill_count': skill_count,
+        'recent_blogs': recent_blogs,
+        'recent_projects': recent_projects,
     })
 
 @admin_required
