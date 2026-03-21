@@ -46,6 +46,7 @@ class Skill(models.Model):
 class Blog(models.Model):
     """Maps to the 'blogs' collection."""
     title = models.CharField(max_length=200)
+    image_url = models.URLField(blank=True, null=True)
     content = models.TextField()
     is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

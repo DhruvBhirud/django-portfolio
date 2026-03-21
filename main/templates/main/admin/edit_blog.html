@@ -2,11 +2,21 @@
 {% block content %}
     <h1>{% if blog.id %}Edit Blog{% else %}Add Blog{% endif %}</h1>
     <div class="card">
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <label>Title:</label>
             <input type="text" name="title" value="{{ blog.title|default:'' }}" required>
             
+            <label>Blog Thumbnail Image (Cloudinary Upload):</label>
+            {% if blog.image_url %}
+            <div style="margin-bottom: 10px;">
+                <img src="{{ blog.image_url }}" alt="Current Image" style="max-height: 100px; border-radius: 4px;">
+                <p style="font-size: 14px; margin: 5px 0;">Current Image. Upload a new one to replace.</p>
+            </div>
+            {% endif %}
+            <input type="file" name="image" accept="image/*">
+            <br><br>
+
             <label>Content:</label>
             <textarea name="content" rows="15" required>{{ blog.content|default:'' }}</textarea>
             

@@ -84,6 +84,16 @@ def edit_blog(request, blog_id=None):
             'content': request.POST.get('content'),
             'is_published': request.POST.get('is_published') == 'on',
         }
+        
+        # Keep existing image url if editing
+        if blog_id and blog.get('image_url'):
+            blog_data['image_url'] = blog['image_url']
+            
+        image_file = request.FILES.get('image')
+        if image_file:
+            upload_result = cloudinary.uploader.upload(image_file)
+            blog_data['image_url'] = upload_result['secure_url']
+            
         if blog_id:
             db.blogs.update_one({'_id': ObjectId(blog_id)}, {'$set': blog_data})
         else:
