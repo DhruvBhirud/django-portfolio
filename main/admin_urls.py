@@ -1,0 +1,13 @@
+from django.urls import path
+from . import admin_views
+
+urlpatterns = [
+    path('login/', admin_views.admin_login, name='admin_login'),
+    path('logout/', admin_views.admin_logout, name='admin_logout'),
+    path('', admin_views.dashboard, name='admin_dashboard'),
+    path('profile/', admin_views.edit_profile, name='admin_profile'),
+    path('blogs/', admin_views.list_blogs, name='admin_blogs'),
+    path('blogs/add/', admin_views.edit_blog, name='admin_blog_add'),
+    path('blogs/edit/<str:blog_id>/', admin_views.edit_blog, name='admin_blog_edit'),
+    path('blogs/delete/<str:blog_id>/', admin_views.delete_blog, name='admin_blog_delete'),
+]

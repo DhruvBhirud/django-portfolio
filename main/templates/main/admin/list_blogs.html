@@ -1,0 +1,41 @@
+{% extends 'main/admin/base_admin.html' %}
+{% block content %}
+    <h1>Manage Blogs</h1>
+    <div style="margin-bottom: 20px;">
+        <a href="{% url 'admin_blog_add' %}" style="text-decoration: none;">
+            <button>Add New Blog</button>
+        </a>
+    </div>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Created At</th>
+                    <th>Published</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for blog in blogs %}
+                <tr>
+                    <td>{{ blog.title }}</td>
+                    <td>{{ blog.created_at|date:"M d, Y" }}</td>
+                    <td>{{ blog.is_published|yesno:"Yes,No" }}</td>
+                    <td>
+                        <a href="{% url 'admin_blog_edit' blog.id %}"><button>Edit</button></a>
+                        <form method="post" action="{% url 'admin_blog_delete' blog.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">No blogs found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

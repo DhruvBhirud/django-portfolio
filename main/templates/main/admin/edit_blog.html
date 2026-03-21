@@ -1,0 +1,23 @@
+{% extends 'main/admin/base_admin.html' %}
+{% block content %}
+    <h1>{% if blog.id %}Edit Blog{% else %}Add Blog{% endif %}</h1>
+    <div class="card">
+        <form method="post">
+            {% csrf_token %}
+            <label>Title:</label>
+            <input type="text" name="title" value="{{ blog.title|default:'' }}" required>
+            
+            <label>Content:</label>
+            <textarea name="content" rows="15" required>{{ blog.content|default:'' }}</textarea>
+            
+            <label>
+                <input type="checkbox" name="is_published" style="width: auto;" {% if blog.is_published %}checked{% endif %}>
+                Published
+            </label>
+            <br><br>
+            
+            <button type="submit">Save Blog</button>
+            <a href="{% url 'admin_blogs' %}" style="margin-left: 10px;">Cancel</a>
+        </form>
+    </div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends 'main/base.html' %}
+{% block title %}{{ blog.title }} - Portfolio{% endblock %}
+
+{% block content %}
+<section class="section detail-section">
+    <div class="detail-container">
+        <a href="{% url 'blog_index' %}" class="back-link">← Back to Blogs</a>
+        <h1 class="detail-title">{{ blog.title }}</h1>
+        <div class="detail-tags">
+            <span class="project-tag">{{ blog.created_at|date:"M d, Y" }}</span>
+        </div>
+        
+        <div class="detail-content" style="white-space: pre-wrap; margin-top: 30px; font-size: 1.1rem; line-height: 1.8;">
+            {{ blog.content }}
+        </div>
+    </div>
+</section>
+{% endblock %}

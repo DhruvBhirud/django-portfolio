@@ -52,6 +52,29 @@
     </div>
 </section>
 
+<!-- Blogs -->
+<section class="section" id="blogs">
+    <h2 class="section-title">Recent Blogs</h2>
+    <div class="projects-grid">
+        {% for blog in blogs %}
+        <div class="project-card">
+            <div class="project-header">
+                <h3>{{ blog.title }}</h3>
+            </div>
+            <p>{{ blog.content|truncatewords:20 }}</p>
+            <div class="project-links mt-3" style="margin-top: 15px;">
+                <a href="{% url 'blog_detail' blog.id %}" class="btn btn-outline" style="padding: 5px 15px;">Read More</a>
+            </div>
+        </div>
+        {% empty %}
+        <p class="empty-msg">No blogs currently available.</p>
+        {% endfor %}
+    </div>
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="{% url 'blog_index' %}" class="btn btn-primary">View All Blogs</a>
+    </div>
+</section>
+
 <!-- Contact -->
 <section class="section" id="contact">
     <h2 class="section-title">Get In Touch</h2>

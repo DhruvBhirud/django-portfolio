@@ -1,0 +1,9 @@
+{% extends 'main/admin/base_admin.html' %}
+{% block content %}
+    <h1>Dashboard Overview</h1>
+    <div class="card">
+        <h3>Statistics</h3>
+        <p><strong>Total Projects:</strong> {{ project_count }}</p>
+        <p><strong>Total Blogs:</strong> {{ blog_count }}</p>
+    </div>
+{% endblock %}

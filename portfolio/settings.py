@@ -131,3 +131,5 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MONGODB_URI = os.environ.get('MONGODB_URI')
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
