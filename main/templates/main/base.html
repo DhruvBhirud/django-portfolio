@@ -10,6 +10,13 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=1.1">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
+    
+    <script>
+        // Check local storage for theme preference to prevent flash
+        if (localStorage.getItem('theme') === 'light') {
+            document.documentElement.classList.add('light-mode');
+        }
+    </script>
 </head>
 <body>
     <nav>
@@ -23,11 +30,43 @@
             <a href="/#skills" onclick="document.querySelector('.nav-links').classList.remove('active')">Skills</a>
             <a href="{% url 'blog_index' %}" onclick="document.querySelector('.nav-links').classList.remove('active')">Blogs</a>
             <a href="/#contact" onclick="document.querySelector('.nav-links').classList.remove('active')">Contact</a>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme">
+                <i class="fas fa-moon"></i>
+            </button>
         </div>
     </nav>
     {% block content %}{% endblock %}
     <footer>
         <p>Built with ☕ by <a href="https://github.com/DhruvBhirud/">Dhruv Bhirud</a></p>
     </footer>
+
+    <script>
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = themeToggle.querySelector('i');
+        
+        function updateIcon() {
+            if (document.documentElement.classList.contains('light-mode')) {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            } else {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            }
+        }
+        
+        // Initial icon update
+        updateIcon();
+        
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('light-mode');
+            
+            if (document.documentElement.classList.contains('light-mode')) {
+                localStorage.setItem('theme', 'light');
+            } else {
+                localStorage.setItem('theme', 'dark');
+            }
+            updateIcon();
+        });
+    </script>
 </body>
 </html>
