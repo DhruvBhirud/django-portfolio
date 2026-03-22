@@ -5,7 +5,15 @@ from bson import ObjectId
 def index(request):
     db = get_db()
     projects = list(db.projects.find().sort('order', 1))
-    skills = list(db.skills.find())
+    raw_skills = list(db.skills.find().sort('order', 1))
+    
+    # Group skills by category while maintaining explicit sort order per-category
+    grouped_skills = {}
+    for skill in raw_skills:
+        cat = skill.get('category', 'Other')
+        if cat not in grouped_skills:
+            grouped_skills[cat] = []
+        grouped_skills[cat].append(skill)
     
     # Get published blogs for index
     blogs = list(db.blogs.find({'is_published': True}).sort('created_at', -1).limit(3))
@@ -30,7 +38,7 @@ def index(request):
     
     context = {
         'projects': projects,
-        'skills': skills,
+        'grouped_skills': grouped_skills,
         'blogs': blogs,
         'name': profile.get('name', 'Dhruv Bhirud'),
         'title': profile.get('title', 'Software Developer'),

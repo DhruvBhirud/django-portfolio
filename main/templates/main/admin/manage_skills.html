@@ -9,6 +9,7 @@
             <input type="text" name="name" placeholder="E.g., Python, React" required style="margin-bottom: 0; min-width: 200px;">
             <input list="devicon-list" name="icon_class" placeholder="Search/Select Devicon..." style="margin-bottom: 0; min-width: 250px;">
             <datalist id="devicon-list"></datalist>
+            <input type="text" name="category" placeholder="Category (e.g. Frontend)" style="margin-bottom: 0; min-width: 200px;" value="Other">
             <input type="file" name="custom_icon" accept="image/*" style="margin-bottom: 0; max-width: 250px;" title="Upload custom icon if class not available">
             <button type="submit">Add Skill</button>
             <small style="width: 100%; color: #7f8c8d; margin-top: 5px;">Select an icon from the dropdown, or upload a custom image (PNG/SVG).</small>
@@ -20,13 +21,18 @@
         <table>
             <thead>
                 <tr>
+                    <th style="width: 40px;"></th>
                     <th>Skill Name</th>
-                    <th style="width: 100px;">Actions</th>
+                    <th>Category</th>
+                    <th style="width: 150px;">Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="sortable-skills">
                 {% for skill in skills %}
-                <tr>
+                <tr data-id="{{ skill.id }}">
+                    <td style="cursor: grab; text-align: center; color: #7f8c8d;">
+                        <i class="fas fa-grip-vertical"></i>
+                    </td>
                     <td>
                         {% if skill.image_url %}
                         <img src="{{ skill.image_url }}" alt="{{ skill.name }} icon" style="height: 1.2em; width: auto; max-width: 2em; margin-right: 5px; vertical-align: middle;">
@@ -35,6 +41,7 @@
                         {% endif %}
                         {{ skill.name }}
                     </td>
+                    <td>{{ skill.category|default:"Other" }}</td>
                     <td>
                         <div style="display: flex; gap: 5px;">
                             <a href="{% url 'admin_skill_edit' skill.id %}" style="text-decoration: none;">
@@ -56,6 +63,40 @@
         </table>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var el = document.getElementById('sortable-skills');
+            if (el) {
+                var sortable = Sortable.create(el, {
+                    handle: '.fa-grip-vertical',
+                    animation: 150,
+                    onEnd: function (evt) {
+                        var itemEl = evt.item; 
+                        var activeOrder = [];
+                        el.querySelectorAll('tr[data-id]').forEach(function(row) {
+                            activeOrder.push(row.getAttribute('data-id'));
+                        });
+                        
+                        fetch("{% url 'admin_skills_reorder' %}", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(activeOrder)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status !== 'success') {
+                                console.error("Error saving sort order", data);
+                                alert("Failed to save reordered list.");
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    </script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             fetch('https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.json')

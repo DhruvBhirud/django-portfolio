@@ -11,6 +11,7 @@ urlpatterns = [
     path('blogs/edit/<str:blog_id>/', admin_views.edit_blog, name='admin_blog_edit'),
     path('blogs/delete/<str:blog_id>/', admin_views.delete_blog, name='admin_blog_delete'),
     path('skills/', admin_views.manage_skills, name='admin_skills'),
+    path('skills/reorder/', admin_views.reorder_skills, name='admin_skills_reorder'),
     path('skills/edit/<str:skill_id>/', admin_views.edit_skill, name='admin_skill_edit'),
     path('skills/delete/<str:skill_id>/', admin_views.delete_skill, name='admin_skill_delete'),
     path('projects/', admin_views.list_projects, name='admin_projects'),

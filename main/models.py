@@ -40,6 +40,8 @@ class Skill(models.Model):
     name = models.CharField(max_length=100)
     icon_class = models.CharField(max_length=100, blank=True, null=True)
     image_url = models.URLField(blank=True, null=True)
+    category = models.CharField(max_length=100, default='Other')
+    order = models.IntegerField(default=0)
 
     class Meta:
         managed = False

@@ -165,8 +165,12 @@ def manage_skills(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         icon_class = request.POST.get('icon_class', '')
+        category = request.POST.get('category', 'Other')
         
-        skill_data = {'name': name, 'icon_class': icon_class}
+        max_order_skill = db.skills.find_one(sort=[('order', -1)])
+        new_order = (max_order_skill.get('order', 0) + 1) if max_order_skill else 0
+        
+        skill_data = {'name': name, 'icon_class': icon_class, 'category': category, 'order': new_order}
         
         custom_icon = request.FILES.get('custom_icon')
         if custom_icon:
@@ -181,7 +185,26 @@ def manage_skills(request):
             db.skills.insert_one(skill_data)
         return redirect('admin_skills')
         
-    skills = list(db.skills.find())
+    skills = list(db.skills.find().sort('order', 1))
+    
+    # Auto-migration for existing skills without order or category
+    migrated = False
+    for i, s in enumerate(skills):
+        updates = {}
+        if 'order' not in s:
+            updates['order'] = i
+            s['order'] = i
+        if 'category' not in s:
+            updates['category'] = 'Other'
+            s['category'] = 'Other'
+            
+        if updates:
+            db.skills.update_one({'_id': s['_id']}, {'$set': updates})
+            migrated = True
+            
+    if migrated:
+        skills = list(db.skills.find().sort('order', 1))
+        
     for s in skills:
         s['id'] = str(s['_id'])
         
@@ -197,8 +220,9 @@ def edit_skill(request, skill_id):
     if request.method == 'POST':
         name = request.POST.get('name')
         icon_class = request.POST.get('icon_class', '')
+        category = request.POST.get('category', 'Other')
         
-        skill_data = {'name': name, 'icon_class': icon_class}
+        skill_data = {'name': name, 'icon_class': icon_class, 'category': category}
         
         if skill.get('image_url'):
             skill_data['image_url'] = skill['image_url']
@@ -225,6 +249,24 @@ def delete_skill(request, skill_id):
     if request.method == 'POST':
         db.skills.delete_one({'_id': ObjectId(skill_id)})
     return redirect('admin_skills')
+
+@csrf_exempt
+@admin_required
+def reorder_skills(request):
+    import json
+    if request.method == 'POST':
+        try:
+            db = get_db()
+            data = json.loads(request.body)
+            for index, skill_id in enumerate(data):
+                db.skills.update_one(
+                    {'_id': ObjectId(skill_id)},
+                    {'$set': {'order': index}}
+                )
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'invalid method'}, status=405)
 
 @admin_required
 def list_projects(request):
