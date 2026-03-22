@@ -116,6 +116,7 @@ def list_blogs(request):
 
 @admin_required
 def edit_blog(request, blog_id=None):
+    from django.utils.text import slugify
     db = get_db()
     blog = {}
     if blog_id:
@@ -123,8 +124,10 @@ def edit_blog(request, blog_id=None):
         blog['id'] = str(blog['_id'])
         
     if request.method == 'POST':
+        title = request.POST.get('title')
         blog_data = {
-            'title': request.POST.get('title'),
+            'title': title,
+            'slug': slugify(title),
             'content': request.POST.get('content'),
             'is_published': request.POST.get('is_published') == 'on',
         }
@@ -233,6 +236,7 @@ def list_projects(request):
 
 @admin_required
 def edit_project(request, project_id=None):
+    from django.utils.text import slugify
     db = get_db()
     project = {}
     if project_id:
@@ -240,8 +244,10 @@ def edit_project(request, project_id=None):
         project['id'] = str(project['_id'])
         
     if request.method == 'POST':
+        title = request.POST.get('title')
         project_data = {
-            'title': request.POST.get('title'),
+            'title': title,
+            'slug': slugify(title),
             'description': request.POST.get('description'),
             'tech': request.POST.get('tech'),
             'github_url': request.POST.get('github_url'),

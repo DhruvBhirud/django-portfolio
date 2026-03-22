@@ -33,9 +33,9 @@ def index(request):
     }
     return render(request, 'main/index.html', context)
 
-def project_detail(request, project_id):
+def project_detail(request, project_slug):
     db = get_db()
-    project = db.projects.find_one({'_id': ObjectId(project_id)})
+    project = db.projects.find_one({'slug': project_slug})
     if project:
         project['id'] = str(project['_id'])
     return render(request, 'main/project_detail.html', {'project': project})
@@ -47,9 +47,9 @@ def blog_index(request):
         b['id'] = str(b['_id'])
     return render(request, 'main/blog_index.html', {'blogs': blogs})
 
-def blog_detail(request, blog_id):
+def blog_detail(request, blog_slug):
     db = get_db()
-    blog = db.blogs.find_one({'_id': ObjectId(blog_id)})
+    blog = db.blogs.find_one({'slug': blog_slug})
     if blog:
         blog['id'] = str(blog['_id'])
     return render(request, 'main/blog_detail.html', {'blog': blog})
