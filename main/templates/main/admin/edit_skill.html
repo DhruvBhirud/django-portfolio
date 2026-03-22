@@ -10,9 +10,9 @@
             <label>Category (e.g. Frontend, Backend):</label>
             <input list="category-list" name="category" value="{{ skill.category|default:'Other' }}" required>
             <datalist id="category-list">
-                <option value="Other"></option>
+                <option value="Other">Other</option>
                 {% for cat in categories %}
-                <option value="{{ cat }}"></option>
+                <option value="{{ cat }}">{{ cat }}</option>
                 {% endfor %}
             </datalist>
             

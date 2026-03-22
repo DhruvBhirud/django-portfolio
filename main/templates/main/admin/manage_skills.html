@@ -11,9 +11,9 @@
             <datalist id="devicon-list"></datalist>
             <input list="category-list" name="category" placeholder="Category (e.g. Frontend)" style="margin-bottom: 0; min-width: 200px;" value="Other">
             <datalist id="category-list">
-                <option value="Other"></option>
+                <option value="Other">Other</option>
                 {% for cat in categories %}
-                <option value="{{ cat }}"></option>
+                <option value="{{ cat }}">{{ cat }}</option>
                 {% endfor %}
             </datalist>
             <input type="file" name="custom_icon" accept="image/*" style="margin-bottom: 0; max-width: 250px;" title="Upload custom icon if class not available">
