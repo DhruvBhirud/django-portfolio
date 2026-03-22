@@ -27,17 +27,17 @@
 </head>
 <body>
     <div class="sidebar">
-        <h2>Portfolio Admin</h2>
-        <a href="{% url 'admin_dashboard' %}">Dashboard</a>
-        <a href="{% url 'admin_profile' %}">Edit Profile</a>
-        <a href="{% url 'admin_projects' %}">Manage Projects</a>
-        <a href="{% url 'admin_blogs' %}">Manage Blogs</a>
-        <a href="{% url 'admin_skills' %}">Manage Skills</a>
-        <a href="{% url 'admin_messages' %}">Inboxes & Messages</a>
-        <a href="{% url 'admin_settings' %}">System Settings</a>
-        <a href="/">View Site</a>
+        <h2 style="font-size: 1.2rem; margin-bottom: 30px; color: #3498db;">Portfolio Admin</h2>
+        <a href="{% url 'admin_dashboard' %}"><i class="fas fa-tachometer-alt" style="width: 20px; margin-right: 10px;"></i> Dashboard</a>
+        <a href="{% url 'admin_profile' %}"><i class="fas fa-user-edit" style="width: 20px; margin-right: 10px;"></i> Edit Profile</a>
+        <a href="{% url 'admin_projects' %}"><i class="fas fa-project-diagram" style="width: 20px; margin-right: 10px;"></i> Manage Projects</a>
+        <a href="{% url 'admin_blogs' %}"><i class="fas fa-blog" style="width: 20px; margin-right: 10px;"></i> Manage Blogs</a>
+        <a href="{% url 'admin_skills' %}"><i class="fas fa-tools" style="width: 20px; margin-right: 10px;"></i> Manage Skills</a>
+        <a href="{% url 'admin_messages' %}"><i class="fas fa-envelope" style="width: 20px; margin-right: 10px;"></i> Inboxes & Messages</a>
+        <a href="{% url 'admin_settings' %}"><i class="fas fa-cog" style="width: 20px; margin-right: 10px;"></i> System Settings</a>
+        <a href="/" target="_blank"><i class="fas fa-external-link-alt" style="width: 20px; margin-right: 10px;"></i> View Site</a>
         <div style="margin-top: auto; padding-top: 30px; border-top: 1px solid #34495e;">
-            <a href="{% url 'admin_logout' %}" style="color: #e74c3c;">Logout</a>
+            <a href="{% url 'admin_logout' %}" style="color: #e74c3c;"><i class="fas fa-sign-out-alt" style="width: 20px; margin-right: 10px;"></i> Logout</a>
         </div>
     </div>
     <div class="main-content">

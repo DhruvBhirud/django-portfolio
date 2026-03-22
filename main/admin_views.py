@@ -313,6 +313,25 @@ def edit_project(request, project_id=None):
         if image_file:
             upload_result = cloudinary.uploader.upload(image_file)
             project_data['image_url'] = upload_result['secure_url']
+
+        # Gallery Management
+        gallery = project.get('gallery', []) if project_id else []
+        
+        # Handle deletions from existing gallery
+        deleted_images = request.POST.getlist('deleted_images')
+        if deleted_images:
+            gallery = [url for url in gallery if url not in deleted_images]
+            
+        # Handle new gallery uploads
+        gallery_files = request.FILES.getlist('gallery_images')
+        for f in gallery_files:
+            try:
+                upload_res = cloudinary.uploader.upload(f, folder='project_galleries')
+                gallery.append(upload_res['secure_url'])
+            except Exception as e:
+                print(f"Gallery upload failed: {e}")
+                
+        project_data['gallery'] = gallery
             
         if project_id:
             db.projects.update_one({'_id': ObjectId(project_id)}, {'$set': project_data})
