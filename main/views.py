@@ -13,11 +13,20 @@ def index(request):
     # Get profile
     profile = db.profile.find_one() or {}
     
-    # Convert ObjectId to string for template use
+    from django.utils.text import slugify
+    
+    # Convert ObjectId to string for template use, and auto-heal missing slugs
     for p in projects:
         p['id'] = str(p['_id'])
+        if 'slug' not in p:
+            p['slug'] = slugify(p.get('title', p['id']))
+            db.projects.update_one({'_id': p['_id']}, {'$set': {'slug': p['slug']}})
+            
     for b in blogs:
         b['id'] = str(b['_id'])
+        if 'slug' not in b:
+            b['slug'] = slugify(b.get('title', b['id']))
+            db.blogs.update_one({'_id': b['_id']}, {'$set': {'slug': b['slug']}})
     
     context = {
         'projects': projects,
@@ -41,10 +50,14 @@ def project_detail(request, project_slug):
     return render(request, 'main/project_detail.html', {'project': project})
 
 def blog_index(request):
+    from django.utils.text import slugify
     db = get_db()
     blogs = list(db.blogs.find({'is_published': True}).sort('created_at', -1))
     for b in blogs:
         b['id'] = str(b['_id'])
+        if 'slug' not in b:
+            b['slug'] = slugify(b.get('title', b['id']))
+            db.blogs.update_one({'_id': b['_id']}, {'$set': {'slug': b['slug']}})
     return render(request, 'main/blog_index.html', {'blogs': blogs})
 
 def blog_detail(request, blog_slug):
