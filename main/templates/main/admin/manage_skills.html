@@ -7,10 +7,11 @@
         <form method="post" enctype="multipart/form-data" action="{% url 'admin_skills' %}" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
             {% csrf_token %}
             <input type="text" name="name" placeholder="E.g., Python, React" required style="margin-bottom: 0; min-width: 200px;">
-            <input type="text" name="icon_class" placeholder="Icon class (e.g. devicon-python-plain)" style="margin-bottom: 0; min-width: 250px;">
+            <input list="devicon-list" name="icon_class" placeholder="Search/Select Devicon..." style="margin-bottom: 0; min-width: 250px;">
+            <datalist id="devicon-list"></datalist>
             <input type="file" name="custom_icon" accept="image/*" style="margin-bottom: 0; max-width: 250px;" title="Upload custom icon if class not available">
             <button type="submit">Add Skill</button>
-            <small style="width: 100%; color: #7f8c8d; margin-top: 5px;">Find icon classes at <a href="https://devicon.dev/" target="_blank">devicon.dev</a> (e.g., <code>devicon-django-plain colored</code>). Or upload a custom image (PNG/SVG).</small>
+            <small style="width: 100%; color: #7f8c8d; margin-top: 5px;">Select an icon from the dropdown, or upload a custom image (PNG/SVG).</small>
         </form>
     </div>
 
@@ -49,4 +50,26 @@
             </tbody>
         </table>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch('https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.json')
+            .then(response => response.json())
+            .then(data => {
+                const datalist = document.getElementById('devicon-list');
+                data.forEach(icon => {
+                    if (icon.versions && icon.versions.font && icon.versions.font.length > 0) {
+                        let version = icon.versions.font.includes('plain') ? 'plain' : icon.versions.font[0];
+                        let className = `devicon-${icon.name}-${version} colored`;
+                        let option = document.createElement('option');
+                        option.value = className;
+                        // Provide a recognizable display name for the dropdown natively
+                        option.textContent = icon.name.charAt(0).toUpperCase() + icon.name.slice(1);
+                        datalist.appendChild(option);
+                    }
+                });
+            })
+            .catch(error => console.error("Error loading devicon JSON:", error));
+        });
+    </script>
 {% endblock %}
