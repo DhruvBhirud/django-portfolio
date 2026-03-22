@@ -390,6 +390,13 @@ def admin_settings(request):
         )
             
         if action == 'test_email':
+            if not smtp_data['host'] or not smtp_data['from_email']:
+                return render(request, 'main/admin/settings.html', {
+                    'smtp': smtp_data,
+                    'general': {'max_messages': max_msgs},
+                    'error': 'To send a test email, SMTP Host and From Email are required.',
+                })
+            
             # Try sending a test email
             try:
                 from django.core.mail import get_connection, EmailMessage

@@ -27,11 +27,11 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             <div>
                 <label>SMTP Host</label>
-                <input type="text" name="host" value="{{ smtp.host }}" placeholder="smtp.gmail.com" required>
+                <input type="text" name="host" value="{{ smtp.host }}" placeholder="smtp.gmail.com">
             </div>
             <div>
                 <label>SMTP Port</label>
-                <input type="number" name="port" value="{{ smtp.port|default:587 }}" placeholder="587" required>
+                <input type="number" name="port" value="{{ smtp.port|default:587 }}" placeholder="587">
             </div>
         </div>
 
@@ -50,7 +50,7 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             <div>
                 <label>From Email</label>
-                <input type="email" name="from_email" value="{{ smtp.from_email }}" placeholder="notifications@yourdomain.com" required>
+                <input type="email" name="from_email" value="{{ smtp.from_email }}" placeholder="notifications@yourdomain.com">
             </div>
             <div style="display: flex; align-items: center; height: 100%;">
                 <label style="display: flex; align-items: center; cursor: pointer;">
