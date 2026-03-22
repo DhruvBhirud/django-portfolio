@@ -43,3 +43,38 @@ nav { display: flex; justify-content: space-between; align-items: center; paddin
 .social-links a { color: var(--muted); transition: color 0.3s; }
 .social-links a:hover { color: var(--primary); }
 footer { text-align: center; padding: 2rem; color: var(--muted); border-top: 1px solid #1a1a1a; }
+
+/* Mobile Navigation */
+.menu-toggle {
+    display: none;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .menu-toggle { display: block; }
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: rgba(10, 10, 10, 0.98);
+        border-bottom: 1px solid #222;
+        padding: 1rem 0;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    .nav-links.active {
+        display: flex;
+    }
+    .nav-links a {
+        margin: 1rem 0;
+        text-align: center;
+        width: 100%;
+        display: block;
+    }
+}
