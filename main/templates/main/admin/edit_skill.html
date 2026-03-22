@@ -1,0 +1,49 @@
+{% extends 'main/admin/base_admin.html' %}
+{% block content %}
+    <h1>Edit Skill</h1>
+    <div class="card">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label>Skill Name:</label>
+            <input type="text" name="name" value="{{ skill.name|default:'' }}" required>
+            
+            <label>Devicon Class (optional):</label>
+            <input list="devicon-list" name="icon_class" value="{{ skill.icon_class|default:'' }}" placeholder="Search/Select Devicon...">
+            <datalist id="devicon-list"></datalist>
+            
+            <label>Custom Image (optional):</label>
+            {% if skill.image_url %}
+            <div style="margin-bottom: 10px;">
+                <img src="{{ skill.image_url }}" alt="Current Image" style="max-height: 50px; border-radius: 4px; vertical-align: middle;">
+                <span style="font-size: 14px; margin-left: 10px; color: #7f8c8d;">Current Custom Icon.</span>
+            </div>
+            {% endif %}
+            <input type="file" name="custom_icon" accept="image/*">
+            
+            <br><br>
+            <button type="submit">Save Changes</button>
+            <a href="{% url 'admin_skills' %}" style="margin-left: 10px;">Cancel</a>
+        </form>
+    </div>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch('https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.json')
+            .then(response => response.json())
+            .then(data => {
+                const datalist = document.getElementById('devicon-list');
+                data.forEach(icon => {
+                    if (icon.versions && icon.versions.font && icon.versions.font.length > 0) {
+                        let version = icon.versions.font.includes('plain') ? 'plain' : icon.versions.font[0];
+                        let className = `devicon-${icon.name}-${version} colored`;
+                        let option = document.createElement('option');
+                        option.value = className;
+                        option.textContent = icon.name.charAt(0).toUpperCase() + icon.name.slice(1);
+                        datalist.appendChild(option);
+                    }
+                });
+            })
+            .catch(error => console.error("Error loading devicon JSON:", error));
+        });
+    </script>
+{% endblock %}

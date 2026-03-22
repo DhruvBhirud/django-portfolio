@@ -185,6 +185,38 @@ def manage_skills(request):
     return render(request, 'main/admin/manage_skills.html', {'skills': skills})
 
 @admin_required
+def edit_skill(request, skill_id):
+    db = get_db()
+    skill = db.skills.find_one({'_id': ObjectId(skill_id)})
+    if not skill:
+        return redirect('admin_skills')
+        
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        icon_class = request.POST.get('icon_class', '')
+        
+        skill_data = {'name': name, 'icon_class': icon_class}
+        
+        if skill.get('image_url'):
+            skill_data['image_url'] = skill['image_url']
+            
+        custom_icon = request.FILES.get('custom_icon')
+        if custom_icon:
+            upload_result = cloudinary.uploader.upload(
+                custom_icon,
+                folder='portfolio_skills',
+                resource_type='auto'
+            )
+            skill_data['image_url'] = upload_result['secure_url']
+            
+        if name:
+            db.skills.update_one({'_id': ObjectId(skill_id)}, {'$set': skill_data})
+        return redirect('admin_skills')
+        
+    skill['id'] = str(skill['_id'])
+    return render(request, 'main/admin/edit_skill.html', {'skill': skill})
+
+@admin_required
 def delete_skill(request, skill_id):
     db = get_db()
     if request.method == 'POST':
