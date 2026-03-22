@@ -11,59 +11,6 @@
             <span class="project-tag">{{ project.tech }}</span>
         </div>
 
-        <style>
-            .project-gallery {
-                display: flex;
-                gap: 15px;
-                overflow-x: auto;
-                padding-bottom: 20px;
-                scroll-snap-type: x mandatory;
-                scrollbar-width: thin;
-                scrollbar-color: var(--primary-color) var(--bg-card);
-            }
-            .gallery-item {
-                flex: 0 0 calc(100% - 40px);
-                max-width: 800px;
-                height: 450px;
-                scroll-snap-align: center;
-                border-radius: 12px;
-                overflow: hidden;
-                border: 1px solid var(--border-card);
-                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            }
-            @media (min-width: 768px) {
-                .gallery-item {
-                    flex: 0 0 auto;
-                    width: 700px;
-                }
-            }
-            .gallery-item img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                transition: transform 0.5s ease;
-            }
-            .gallery-item:hover img {
-                transform: scale(1.05);
-            }
-        </style>
-
-        <div class="project-gallery" style="margin-bottom: 40px;">
-            {% if project.image_url %}
-            <div class="gallery-item">
-                <img src="{{ project.image_url }}" alt="{{ project.title }}">
-            </div>
-            {% endif %}
-            
-            {% if project.gallery %}
-                {% for img_url in project.gallery %}
-                <div class="gallery-item">
-                    <img src="{{ img_url }}" alt="{{ project.title }} Gallery Image">
-                </div>
-                {% endfor %}
-            {% endif %}
-        </div>
-
         <p style="font-size: 1.1rem; color: #7f8c8d; margin-bottom: 30px;">
             {{ project.description }}
         </p>
