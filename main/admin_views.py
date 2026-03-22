@@ -161,8 +161,21 @@ def manage_skills(request):
     
     if request.method == 'POST':
         name = request.POST.get('name')
+        icon_class = request.POST.get('icon_class', '')
+        
+        skill_data = {'name': name, 'icon_class': icon_class}
+        
+        custom_icon = request.FILES.get('custom_icon')
+        if custom_icon:
+            upload_result = cloudinary.uploader.upload(
+                custom_icon,
+                folder='portfolio_skills',
+                resource_type='auto'
+            )
+            skill_data['image_url'] = upload_result['secure_url']
+            
         if name:
-            db.skills.insert_one({'name': name})
+            db.skills.insert_one(skill_data)
         return redirect('admin_skills')
         
     skills = list(db.skills.find())

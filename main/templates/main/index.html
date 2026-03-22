@@ -228,7 +228,14 @@
     <h2 class="section-title">Skills</h2>
     <div class="skills-grid">
         {% for skill in skills %}
-        <div class="skill-badge">{{ skill.name }}</div>
+        <div class="skill-badge" style="display: flex; align-items: center;">
+            {% if skill.image_url %}
+            <img src="{{ skill.image_url }}" alt="{{ skill.name }} icon" style="height: 1.2em; width: auto; max-width: 2em; margin-right: 5px; object-fit: contain;">
+            {% elif skill.icon_class %}
+            <i class="{{ skill.icon_class }}" style="margin-right: 5px; font-size: 1.2em;"></i>
+            {% endif %}
+            {{ skill.name }}
+        </div>
         {% endfor %}
     </div>
 </section>

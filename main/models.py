@@ -38,6 +38,8 @@ class Project(models.Model):
 class Skill(models.Model):
     """Maps to the 'skills' collection."""
     name = models.CharField(max_length=100)
+    icon_class = models.CharField(max_length=100, blank=True, null=True)
+    image_url = models.URLField(blank=True, null=True)
 
     class Meta:
         managed = False

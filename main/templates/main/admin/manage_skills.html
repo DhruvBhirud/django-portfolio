@@ -4,10 +4,13 @@
     
     <div class="card">
         <h3>Add New Skill</h3>
-        <form method="post" action="{% url 'admin_skills' %}" style="display: flex; gap: 10px;">
+        <form method="post" enctype="multipart/form-data" action="{% url 'admin_skills' %}" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
             {% csrf_token %}
-            <input type="text" name="name" placeholder="E.g., Python, React, MongoDB" required style="margin-bottom: 0;">
+            <input type="text" name="name" placeholder="E.g., Python, React" required style="margin-bottom: 0; min-width: 200px;">
+            <input type="text" name="icon_class" placeholder="Icon class (e.g. devicon-python-plain)" style="margin-bottom: 0; min-width: 250px;">
+            <input type="file" name="custom_icon" accept="image/*" style="margin-bottom: 0; max-width: 250px;" title="Upload custom icon if class not available">
             <button type="submit">Add Skill</button>
+            <small style="width: 100%; color: #7f8c8d; margin-top: 5px;">Find icon classes at <a href="https://devicon.dev/" target="_blank">devicon.dev</a> (e.g., <code>devicon-django-plain colored</code>). Or upload a custom image (PNG/SVG).</small>
         </form>
     </div>
 
@@ -23,7 +26,14 @@
             <tbody>
                 {% for skill in skills %}
                 <tr>
-                    <td>{{ skill.name }}</td>
+                    <td>
+                        {% if skill.image_url %}
+                        <img src="{{ skill.image_url }}" alt="{{ skill.name }} icon" style="height: 1.2em; width: auto; max-width: 2em; margin-right: 5px; vertical-align: middle;">
+                        {% elif skill.icon_class %}
+                        <i class="{{ skill.icon_class }}" style="font-size: 1.2em; margin-right: 5px; vertical-align: middle;"></i>
+                        {% endif %}
+                        {{ skill.name }}
+                    </td>
                     <td>
                         <form method="post" action="{% url 'admin_skill_delete' skill.id %}" style="margin: 0;">
                             {% csrf_token %}
