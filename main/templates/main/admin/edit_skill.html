@@ -8,7 +8,13 @@
             <input type="text" name="name" value="{{ skill.name|default:'' }}" required>
 
             <label>Category (e.g. Frontend, Backend):</label>
-            <input type="text" name="category" value="{{ skill.category|default:'Other' }}" required>
+            <input list="category-list" name="category" value="{{ skill.category|default:'Other' }}" required>
+            <datalist id="category-list">
+                <option value="Other"></option>
+                {% for cat in categories %}
+                <option value="{{ cat }}"></option>
+                {% endfor %}
+            </datalist>
             
             <label>Devicon Class (optional):</label>
             <input list="devicon-list" name="icon_class" value="{{ skill.icon_class|default:'' }}" placeholder="Search/Select Devicon...">

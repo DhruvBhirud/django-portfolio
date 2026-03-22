@@ -208,7 +208,10 @@ def manage_skills(request):
     for s in skills:
         s['id'] = str(s['_id'])
         
-    return render(request, 'main/admin/manage_skills.html', {'skills': skills})
+    categories = db.skills.distinct('category')
+    categories = [c for c in categories if c and c != 'Other']
+        
+    return render(request, 'main/admin/manage_skills.html', {'skills': skills, 'categories': categories})
 
 @admin_required
 def edit_skill(request, skill_id):
@@ -241,7 +244,11 @@ def edit_skill(request, skill_id):
         return redirect('admin_skills')
         
     skill['id'] = str(skill['_id'])
-    return render(request, 'main/admin/edit_skill.html', {'skill': skill})
+    
+    categories = db.skills.distinct('category')
+    categories = [c for c in categories if c and c != 'Other']
+    
+    return render(request, 'main/admin/edit_skill.html', {'skill': skill, 'categories': categories})
 
 @admin_required
 def delete_skill(request, skill_id):
