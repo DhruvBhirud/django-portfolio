@@ -199,13 +199,13 @@
     <div class="projects-grid">
         {% for project in projects %}
         <div class="project-card">
+            {% if project.image_url %}
+            <img src="{{ project.image_url }}" alt="{{ project.title }}">
+            {% endif %}
             <div class="project-header">
                 <h3>{{ project.title }}</h3>
                 <span class="project-tag">{{ project.tech }}</span>
             </div>
-            {% if project.image_url %}
-            <img src="{{ project.image_url }}" alt="{{ project.title }}" style="width: 100%; height: auto; border-radius: 4px; margin-bottom: 15px; max-height: 250px; object-fit: cover;">
-            {% endif %}
             <p>{{ project.description }}</p>
             <div class="project-links">
                 {% if project.github_url %}
@@ -251,12 +251,12 @@
     <div class="projects-grid">
         {% for blog in blogs %}
         <div class="project-card">
+            {% if blog.image_url %}
+            <img src="{{ blog.image_url }}" alt="{{ blog.title }}">
+            {% endif %}
             <div class="project-header">
                 <h3>{{ blog.title }}</h3>
             </div>
-            {% if blog.image_url %}
-            <img src="{{ blog.image_url }}" alt="{{ blog.title }}" style="width: 100%; height: auto; border-radius: 4px; margin-bottom: 15px; max-height: 250px; object-fit: cover;">
-            {% endif %}
             <p>{{ blog.content|striptags|truncatewords:20 }}</p>
             <div class="project-links mt-3" style="margin-top: 15px;">
                 <a href="{% url 'blog_detail' blog.slug %}" class="btn btn-outline" style="padding: 5px 15px;">Read More</a>

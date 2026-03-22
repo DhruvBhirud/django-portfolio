@@ -45,6 +45,18 @@ nav { display: flex; justify-content: space-between; align-items: center; paddin
 .project-card:hover { transform: translateY(-5px); border-color: var(--primary); }
 .project-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem; }
 .project-header h3 { font-size: 1.1rem; }
+.project-card img {
+    width: calc(100% + 3rem);
+    margin: -1.5rem -1.5rem 1.2rem -1.5rem;
+    height: 200px;
+    object-fit: contain;
+    background: rgba(0, 0, 0, 0.2); /* Subtle dark background for non-matching aspect ratios */
+    border-radius: 12px 12px 0 0;
+    transition: transform 0.5s ease;
+}
+.project-card:hover img {
+    transform: scale(1.05);
+}
 .project-tag { background: rgba(108,99,255,0.2); color: var(--primary); padding: 0.2rem 0.7rem; border-radius: 20px; font-size: 0.8rem; }
 .project-links { display: flex; gap: 1rem; margin-top: 1rem; }
 .project-links a { color: var(--primary); text-decoration: none; font-size: 0.9rem; }
