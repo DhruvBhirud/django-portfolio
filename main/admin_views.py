@@ -329,3 +329,100 @@ def delete_project(request, project_id):
     if request.method == 'POST':
         db.projects.delete_one({'_id': ObjectId(project_id)})
     return redirect('admin_projects')
+
+@admin_required
+def list_messages(request):
+    db = get_db()
+    messages = list(db.messages.find().sort('created_at', -1))
+    for m in messages:
+        m['id'] = str(m['_id'])
+    return render(request, 'main/admin/messages_list.html', {'messages': messages})
+
+@admin_required
+def view_message(request, message_id):
+    db = get_db()
+    message = db.messages.find_one({'_id': ObjectId(message_id)})
+    if message:
+        message['id'] = str(message['_id'])
+        if not message.get('is_read'):
+            db.messages.update_one({'_id': ObjectId(message_id)}, {'$set': {'is_read': True}})
+    return render(request, 'main/admin/view_message.html', {'message': message})
+
+@admin_required
+def delete_message(request, message_id):
+    db = get_db()
+    if request.method == 'POST':
+        db.messages.delete_one({'_id': ObjectId(message_id)})
+    return redirect('admin_messages')
+
+@admin_required
+def admin_settings(request):
+    db = get_db()
+    smtp_settings = db.settings.find_one({'type': 'smtp'}) or {}
+    general_settings = db.settings.find_one({'type': 'general'}) or {'max_messages': 50}
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        # Update General Settings
+        max_msgs = int(request.POST.get('max_messages', 50))
+        db.settings.update_one(
+            {'type': 'general'}, 
+            {'$set': {'max_messages': max_msgs}}, 
+            upsert=True
+        )
+        
+        # Update SMTP Settings
+        smtp_data = {
+            'type': 'smtp',
+            'host': request.POST.get('host'),
+            'port': int(request.POST.get('port', 587)),
+            'user': request.POST.get('user'),
+            'password': request.POST.get('password'),
+            'from_email': request.POST.get('from_email'),
+            'use_tls': request.POST.get('use_tls') == 'on',
+        }
+        
+        db.settings.update_one(
+            {'type': 'smtp'},
+            {'$set': smtp_data},
+            upsert=True
+        )
+            
+        if action == 'test_email':
+            # Try sending a test email
+            try:
+                from django.core.mail import get_connection, EmailMessage
+                connection = get_connection(
+                    host=smtp_data['host'],
+                    port=smtp_data['port'],
+                    username=smtp_data['user'],
+                    password=smtp_data['password'],
+                    use_tls=smtp_data['use_tls'],
+                )
+                email = EmailMessage(
+                    'Portfolio SMTP Test',
+                    'This is a test email from your portfolio website. If you received this, your SMTP settings are correct!',
+                    smtp_data['from_email'],
+                    [smtp_data['from_email']], # Send to self
+                    connection=connection,
+                )
+                email.send()
+                return render(request, 'main/admin/settings.html', {
+                    'smtp': smtp_data,
+                    'general': {'max_messages': max_msgs},
+                    'success': 'Test email sent successfully! Check your inbox.',
+                })
+            except Exception as e:
+                return render(request, 'main/admin/settings.html', {
+                    'smtp': smtp_data,
+                    'general': {'max_messages': max_msgs},
+                    'error': f'Failed to send test email: {str(e)}',
+                })
+                
+        return redirect('admin_settings')
+        
+    return render(request, 'main/admin/settings.html', {
+        'smtp': smtp_settings,
+        'general': general_settings
+    })

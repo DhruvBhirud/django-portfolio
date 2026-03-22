@@ -35,6 +35,15 @@
             </button>
         </div>
     </nav>
+    {% if messages %}
+    <div class="messages" style="padding: 1rem 5%; position: relative; z-index: 100;">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}" style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem; {% if message.tags == 'success' %}background: #d4edda; color: #155724;{% else %}background: #f8d7da; color: #721c24;{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
     {% block content %}{% endblock %}
     <footer>
         <p>Built with ☕ by <a href="https://github.com/DhruvBhirud/">Dhruv Bhirud</a></p>

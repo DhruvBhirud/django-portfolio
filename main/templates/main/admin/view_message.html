@@ -1,0 +1,26 @@
+{% extends 'main/admin/base_admin.html' %}
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>Message Details</h2>
+        <a href="{% url 'admin_messages' %}" style="text-decoration: none; color: #7f8c8d;">&larr; Back to Inbox</a>
+    </div>
+    
+    <div style="border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px;">
+        <p><strong>From:</strong> {{ message.name }} ({{ message.email }})</p>
+        <p><strong>Date:</strong> {{ message.created_at|date:"F j, Y, g:i a" }}</p>
+        <p><strong>Subject:</strong> {{ message.subject }}</p>
+    </div>
+
+    <div style="background: #f9f9f9; padding: 20px; border-radius: 4px; line-height: 1.6; white-space: pre-wrap;">{{ message.message }}</div>
+
+    <div style="margin-top: 30px; display: flex; gap: 15px;">
+        <a href="mailto:{{ message.email }}?subject=Re: {{ message.subject }}" class="button" style="text-decoration: none; display: inline-block; padding: 10px 20px; background: #3498db; color: white; border-radius: 4px;">Reply via Email</a>
+        
+        <form action="{% url 'admin_delete_message' message.id %}" method="POST" onsubmit="return confirm('Delete this message permanently?')">
+            {% csrf_token %}
+            <button type="submit" class="btn-danger">Delete Message</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

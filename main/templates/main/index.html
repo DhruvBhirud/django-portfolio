@@ -274,12 +274,34 @@
 <!-- Contact -->
 <section class="section" id="contact">
     <h2 class="section-title">Get In Touch</h2>
-    <div class="contact-content">
-        <p>I'm open to new opportunities. Feel free to reach out!</p>
-        <a href="mailto:{{ email }}" class="btn btn-primary">{{ email }}</a>
-        <div class="social-links">
-            <a href="{{ github }}" target="_blank"><i class="fab fa-github"></i></a>
-            <a href="{{ linkedin }}" target="_blank"><i class="fab fa-linkedin"></i></a>
+    <div class="contact-content" style="max-width: 600px; margin: 0 auto; text-align: left;">
+        <p style="text-align: center; margin-bottom: 2rem;">I'm open to new opportunities. Feel free to reach out!</p>
+        
+        <form action="{% url 'submit_contact' %}" method="POST" id="contact-form" style="background: var(--bg-card); padding: 2rem; border-radius: 12px; border: 1px solid var(--border-card);">
+            {% csrf_token %}
+            <div style="margin-bottom: 1.5rem;">
+                <label for="name" style="display: block; margin-bottom: 0.5rem; color: var(--text-main);">Name</label>
+                <input type="text" id="name" name="name" required style="width: 100%; padding: 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main);">
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <label for="email" style="display: block; margin-bottom: 0.5rem; color: var(--text-main);">Email</label>
+                <input type="email" id="email" name="email" required style="width: 100%; padding: 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main);">
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <label for="subject" style="display: block; margin-bottom: 0.5rem; color: var(--text-main);">Subject</label>
+                <input type="text" id="subject" name="subject" style="width: 100%; padding: 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main);">
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <label for="message" style="display: block; margin-bottom: 0.5rem; color: var(--text-main);">Message</label>
+                <textarea id="message" name="message" rows="5" required style="width: 100%; padding: 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-family: inherit; resize: vertical;"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
+        </form>
+
+        <div class="social-links" style="margin-top: 3rem; display: flex; justify-content: center; gap: 2rem; font-size: 2rem;">
+            <a href="{{ github }}" target="_blank" style="color: var(--text-muted); transition: color 0.3s;"><i class="fab fa-github"></i></a>
+            <a href="{{ linkedin }}" target="_blank" style="color: var(--text-muted); transition: color 0.3s;"><i class="fab fa-linkedin"></i></a>
+            <a href="mailto:{{ email }}" style="color: var(--text-muted); transition: color 0.3s;"><i class="fas fa-envelope"></i></a>
         </div>
     </div>
 </section>

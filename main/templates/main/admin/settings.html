@@ -1,0 +1,77 @@
+{% extends 'main/admin/base_admin.html' %}
+{% block content %}
+<div class="card">
+    <h2>SMTP & Notification Settings</h2>
+    <p style="color: #7f8c8d; margin-bottom: 25px;">Configure your SMTP server to receive email notifications when someone contacts you.</p>
+
+    {% if success %}
+    <div style="background: #e8f8f5; color: #1abc9c; padding: 15px; border-radius: 4px; margin-bottom: 20px;">{{ success }}</div>
+    {% endif %}
+    {% if error %}
+    <div style="background: #fdf2e9; color: #e67e22; padding: 15px; border-radius: 4px; margin-bottom: 20px;">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <h3 style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">General System Settings</h3>
+        <div style="margin-bottom: 40px;">
+            <label>Message Storage Limit (Max to keep)</label>
+            <input type="number" name="max_messages" value="{{ general.max_messages|default:50 }}" min="1" max="1000" style="width: 200px;">
+            <p style="color: #95a5a6; font-size: 0.9rem; margin-top: -10px;">The oldest messages will be automatically pruned when this limit is reached to save MongoDB storage.</p>
+        </div>
+
+        <h3 style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">SMTP Notification Settings</h3>
+        <p style="color: #7f8c8d; margin-bottom: 20px;">Configure your SMTP server to receive email notifications on form submissions.</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <label>SMTP Host</label>
+                <input type="text" name="host" value="{{ smtp.host }}" placeholder="smtp.gmail.com" required>
+            </div>
+            <div>
+                <label>SMTP Port</label>
+                <input type="number" name="port" value="{{ smtp.port|default:587 }}" placeholder="587" required>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <label>SMTP User (Username/Email)</label>
+                <input type="text" name="user" value="{{ smtp.user }}" placeholder="your-email@gmail.com">
+            </div>
+            <div>
+                <label>SMTP Password / App Password</label>
+                <input type="password" name="password" value="{{ smtp.password }}" placeholder="••••••••••••">
+                <small style="color: #95a5a6; display: block; margin-top: -10px; margin-bottom: 15px;">For Gmail, use an "App Password".</small>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <label>From Email</label>
+                <input type="email" name="from_email" value="{{ smtp.from_email }}" placeholder="notifications@yourdomain.com" required>
+            </div>
+            <div style="display: flex; align-items: center; height: 100%;">
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="checkbox" name="use_tls" {% if smtp.use_tls %}checked{% endif %} style="width: auto; margin-right: 10px; margin-bottom: 0;"> Use TLS (Recommended)
+                </label>
+            </div>
+        </div>
+
+        <div style="margin-top: 30px; display: flex; gap: 15px;">
+            <button type="submit" name="action" value="save">Save All Settings</button>
+            <button type="submit" name="action" value="test_email" style="background: #2ecc71;">Save & Send Test Email</button>
+        </div>
+    </form>
+</div>
+
+<div class="card" style="background: #f8f9fa;">
+    <h3>Common Provider Settings</h3>
+    <ul style="color: #7f8c8d; line-height: 1.6;">
+        <li><strong>Gmail:</strong> Host: <code>smtp.gmail.com</code>, Port: <code>587</code>, User: <code>your-email@gmail.com</code>, TLS: <code>Enabled</code>. (Note: Must use <a href="https://myaccount.google.com/apppasswords" target="_blank">App Passwords</a>).</li>
+        <li><strong>Outlook:</strong> Host: <code>smtp.office365.com</code>, Port: <code>587</code>, TLS: <code>Enabled</code>.</li>
+        <li><strong>SendGrid:</strong> Host: <code>smtp.sendgrid.net</code>, Port: <code>587</code>, User: <code>apikey</code>, Password: <code>[Your API Key]</code>.</li>
+    </ul>
+</div>
+{% endblock %}
