@@ -4,6 +4,7 @@ from bson import ObjectId
 from django.contrib import messages
 from datetime import datetime
 import json
+from better_profanity import profanity
 
 def index(request):
     db = get_db()
@@ -126,6 +127,14 @@ def submit_contact(request):
         
         if not name or not email or not message_text:
             messages.error(request, "Please fill in all required fields.")
+            return redirect('index')
+            
+        # Profanity filter
+        if profanity.contains_profanity(name) or \
+           profanity.contains_profanity(subject or '') or \
+           profanity.contains_profanity(message_text) or \
+           profanity.contains_profanity(email):
+            messages.error(request, "Your message contains inappropriate content and could not be sent.")
             return redirect('index')
             
         message_data = {
