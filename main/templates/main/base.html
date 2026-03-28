@@ -35,14 +35,15 @@
             </button>
         </div>
     </nav>
+    <ul class="notifications"></ul>
     {% if messages %}
-    <div class="messages" style="padding: 1rem 5%; position: relative; z-index: 100;">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}" style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem; {% if message.tags == 'success' %}background: #d4edda; color: #155724;{% else %}background: #f8d7da; color: #721c24;{% endif %}">
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            {% for message in messages %}
+                showToast("{{ message.tags }}", "{{ message|escapejs }}");
+            {% endfor %}
+        });
+    </script>
     {% endif %}
     {% block content %}{% endblock %}
     <footer>
@@ -76,6 +77,46 @@
             }
             updateIcon();
         });
+
+        // Toast logic
+        const notifications = document.querySelector(".notifications");
+
+        const toastDetails = {
+            timer: 5000,
+            success: {
+                icon: 'fa-circle-check',
+            },
+            error: {
+                icon: 'fa-circle-xmark',
+            },
+            warning: {
+                icon: 'fa-triangle-exclamation',
+            },
+            info: {
+                icon: 'fa-circle-info',
+            }
+        }
+
+        const removeToast = (toast) => {
+            toast.classList.add("hide");
+            if(toast.timeoutId) clearTimeout(toast.timeoutId);
+            setTimeout(() => toast.remove(), 500);
+        }
+
+        const showToast = (id, message) => {
+            // Map Django tags to toast types
+            const type = id === 'debug' ? 'info' : (id || 'info');
+            const { icon } = toastDetails[type] || toastDetails.info;
+            const toast = document.createElement("li");
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<div class="column">
+                                 <i class="fa-solid ${icon}"></i>
+                                 <span>${message}</span>
+                              </div>
+                              <i class="fa-solid fa-xmark" onclick="removeToast(this.parentElement)"></i>`;
+            notifications.appendChild(toast);
+            toast.timeoutId = setTimeout(() => removeToast(toast), toastDetails.timer);
+        }
     </script>
 </body>
 </html>
