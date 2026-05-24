@@ -32,8 +32,24 @@ def upload_image(request):
 
 def admin_login(request):
     if request.method == 'POST':
+        from django.contrib.auth.hashers import make_password, check_password
         password = request.POST.get('password')
-        if password == getattr(settings, 'ADMIN_PASSWORD', 'admin123'):
+        
+        db = get_db()
+        auth_doc = db.settings.find_one({'type': 'admin_auth'})
+        if not auth_doc:
+            # Fallback to settings.ADMIN_PASSWORD on first login and save its hash
+            fallback_password = getattr(settings, 'ADMIN_PASSWORD', 'admin123')
+            current_hash = make_password(fallback_password)
+            db.settings.update_one(
+                {'type': 'admin_auth'},
+                {'$set': {'password_hash': current_hash}},
+                upsert=True
+            )
+        else:
+            current_hash = auth_doc.get('password_hash')
+            
+        if check_password(password, current_hash):
             request.session['admin_logged_in'] = True
             return redirect('admin_dashboard')
         else:
@@ -390,6 +406,45 @@ def admin_settings(request):
     
     if request.method == 'POST':
         action = request.POST.get('action')
+        
+        if action == 'change_password':
+            from django.contrib.auth.hashers import make_password, check_password
+            current_pwd = request.POST.get('current_password')
+            new_pwd = request.POST.get('new_password')
+            confirm_pwd = request.POST.get('confirm_password')
+            
+            auth_doc = db.settings.find_one({'type': 'admin_auth'})
+            if not auth_doc:
+                fallback_password = getattr(settings, 'ADMIN_PASSWORD', 'admin123')
+                current_hash = make_password(fallback_password)
+            else:
+                current_hash = auth_doc.get('password_hash')
+                
+            if not check_password(current_pwd, current_hash):
+                return render(request, 'main/admin/settings.html', {
+                    'smtp': smtp_settings,
+                    'general': general_settings,
+                    'error': 'Incorrect current password.',
+                })
+                
+            if new_pwd != confirm_pwd:
+                return render(request, 'main/admin/settings.html', {
+                    'smtp': smtp_settings,
+                    'general': general_settings,
+                    'error': 'New passwords do not match.',
+                })
+                
+            new_hash = make_password(new_pwd)
+            db.settings.update_one(
+                {'type': 'admin_auth'},
+                {'$set': {'password_hash': new_hash}},
+                upsert=True
+            )
+            return render(request, 'main/admin/settings.html', {
+                'smtp': smtp_settings,
+                'general': general_settings,
+                'success': 'Password updated successfully!',
+            })
         
         # Update General Settings
         max_msgs = int(request.POST.get('max_messages', 50))

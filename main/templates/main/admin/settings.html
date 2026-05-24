@@ -66,6 +66,37 @@
     </form>
 </div>
 
+<div class="card" style="margin-top: 30px;">
+    <h3 style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">Change Admin Password</h3>
+    <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="change_password">
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px;">
+            <div>
+                <label>Current Password</label>
+                <input type="password" name="current_password" required>
+            </div>
+            <div>
+                <!-- Empty div for alignment -->
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div>
+                <label>New Password</label>
+                <input type="password" name="new_password" required>
+            </div>
+            <div>
+                <label>Confirm New Password</label>
+                <input type="password" name="confirm_password" required>
+            </div>
+        </div>
+        
+        <button type="submit">Update Password</button>
+    </form>
+</div>
+
 <div class="card" style="background: #f8f9fa;">
     <h3>Common Provider Settings</h3>
     <ul style="color: #7f8c8d; line-height: 1.6;">
