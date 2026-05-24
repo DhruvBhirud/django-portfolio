@@ -66,14 +66,18 @@ def blog_index(request):
     from django.utils.text import slugify
     db = get_db()
     
-    # Get search query
+    # Get search query and tag filter
     search_term = request.GET.get('q', '').strip()
+    tag_filter = request.GET.get('tag', '').strip()
+    
     query = {'is_published': True}
     if search_term:
         query['$or'] = [
             {'title': {'$regex': search_term, '$options': 'i'}},
             {'content': {'$regex': search_term, '$options': 'i'}}
         ]
+    if tag_filter:
+        query['tags'] = {'$regex': rf'(?:^|,)\s*{tag_filter}\s*(?:,|$)', '$options': 'i'}
         
     # Get total count for pagination before reading records
     total_count = db.blogs.count_documents(query)
@@ -99,16 +103,30 @@ def blog_index(request):
     # Fetch subset from database
     blogs = list(db.blogs.find(query).sort('created_at', -1).skip(skip).limit(per_page))
     
-    # Auto-heal missing slugs on paginated subset
+    # Auto-heal missing slugs and split tags into a list for rendering
     for b in blogs:
         b['id'] = str(b['_id'])
         if 'slug' not in b:
             b['slug'] = slugify(b.get('title', b['id']))
             db.blogs.update_one({'_id': b['_id']}, {'$set': {'slug': b['slug']}})
             
+        raw_tags = b.get('tags', '')
+        b['tag_list'] = [t.strip() for t in raw_tags.split(',') if t.strip()] if raw_tags else []
+            
+    # Get all distinct tags for the sidebar filter
+    all_tags = set()
+    for doc in db.blogs.find({'is_published': True, 'tags': {'$exists': True, '$ne': ''}}, {'tags': 1}):
+        for t in doc.get('tags', '').split(','):
+            cleaned = t.strip()
+            if cleaned:
+                all_tags.add(cleaned)
+    sorted_tags = sorted(list(all_tags))
+            
     context = {
         'blogs': blogs,
         'q': search_term,
+        'selected_tag': tag_filter,
+        'all_tags': sorted_tags,
         'page': page,
         'total_pages': total_pages,
         'has_previous': page > 1,
@@ -124,6 +142,8 @@ def blog_detail(request, blog_slug):
     blog = db.blogs.find_one({'slug': blog_slug})
     if blog:
         blog['id'] = str(blog['_id'])
+        raw_tags = blog.get('tags', '')
+        blog['tag_list'] = [t.strip() for t in raw_tags.split(',') if t.strip()] if raw_tags else []
     return render(request, 'main/blog_detail.html', {'blog': blog})
 
 def send_admin_notification(message_data):

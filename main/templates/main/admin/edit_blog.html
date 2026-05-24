@@ -17,6 +17,10 @@
             <input type="file" name="image" accept="image/*">
             <br><br>
 
+            <label>Tags (comma separated):</label>
+            <input type="text" name="tags" value="{{ blog.tags|default:'' }}" placeholder="e.g. Django, Python, Web Dev">
+            <br><br>
+
             <label>Content:</label>
             <textarea name="content" rows="15">{{ blog.content|default:'' }}</textarea>
             

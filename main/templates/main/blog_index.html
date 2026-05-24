@@ -9,11 +9,30 @@
     <div class="search-container">
         <form method="GET" action="{% url 'blog_index' %}" class="search-form">
             <input type="text" name="q" value="{{ q }}" placeholder="Search articles by title or content..." class="search-input">
+            {% if selected_tag %}
+                <input type="hidden" name="tag" value="{{ selected_tag }}">
+            {% endif %}
             <button type="submit" class="search-btn">
                 <i class="fas fa-search"></i> Search
             </button>
         </form>
     </div>
+
+    <!-- Tags Filter Bar -->
+    {% if all_tags %}
+    <div class="tags-filter-bar">
+        {% for tag in all_tags %}
+            <a href="?tag={{ tag }}{% if q %}&q={{ q }}{% endif %}" class="tag-pill {% if selected_tag == tag %}active{% endif %}">
+                <i class="fas fa-hashtag"></i> {{ tag }}
+            </a>
+        {% endfor %}
+        {% if selected_tag %}
+            <a href="?{% if q %}q={{ q }}{% endif %}" class="tag-pill clear-filter">
+                <i class="fas fa-times-circle"></i> Clear Tag Filter
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
 
     <div class="projects-grid">
         {% for blog in blogs %}
@@ -22,6 +41,18 @@
                 <h3>{{ blog.title }}</h3>
                 <span class="project-tag">{{ blog.created_at|date:"M d, Y" }}</span>
             </div>
+            
+            <!-- Blog Post Tags -->
+            {% if blog.tag_list %}
+            <div class="blog-tags">
+                {% for tag in blog.tag_list %}
+                    <a href="?tag={{ tag }}{% if q %}&q={{ q }}{% endif %}" class="blog-tag">
+                        #{{ tag }}
+                    </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+
             {% if blog.image_url %}
             <img src="{{ blog.image_url }}" alt="{{ blog.title }}" style="width: 100%; height: auto; border-radius: 4px; margin-bottom: 15px; max-height: 300px; object-fit: cover;">
             {% endif %}
@@ -39,7 +70,7 @@
     {% if total_pages > 1 %}
     <div class="pagination-container">
         {% if has_previous %}
-        <a href="?page={{ previous_page_number }}{% if q %}&q={{ q }}{% endif %}" class="pagination-link" aria-label="Previous Page">
+        <a href="?page={{ previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}" class="pagination-link" aria-label="Previous Page">
             <i class="fas fa-chevron-left"></i>
         </a>
         {% else %}
@@ -49,13 +80,13 @@
         {% endif %}
 
         {% for p_num in pages_range %}
-            <a href="?page={{ p_num }}{% if q %}&q={{ q }}{% endif %}" class="pagination-link {% if p_num == page %}active{% endif %}">
+            <a href="?page={{ p_num }}{% if q %}&q={{ q }}{% endif %}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}" class="pagination-link {% if p_num == page %}active{% endif %}">
                 {{ p_num }}
             </a>
         {% endfor %}
 
         {% if has_next %}
-        <a href="?page={{ next_page_number }}{% if q %}&q={{ q }}{% endif %}" class="pagination-link" aria-label="Next Page">
+        <a href="?page={{ next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}" class="pagination-link" aria-label="Next Page">
             <i class="fas fa-chevron-right"></i>
         </a>
         {% else %}

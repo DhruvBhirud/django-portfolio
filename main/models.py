@@ -52,8 +52,10 @@ class Blog(models.Model):
     title = models.CharField(max_length=200)
     image_url = models.URLField(blank=True, null=True)
     content = models.TextField()
+    tags = models.CharField(max_length=200, blank=True, null=True)  # Comma-separated list of tags
     is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         managed = False
+

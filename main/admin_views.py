@@ -129,6 +129,7 @@ def edit_blog(request, blog_id=None):
             'title': title,
             'slug': slugify(title),
             'content': request.POST.get('content'),
+            'tags': request.POST.get('tags', ''),
             'is_published': request.POST.get('is_published') == 'on',
         }
         
