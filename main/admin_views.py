@@ -52,6 +52,14 @@ def dashboard(request):
     published_blog_count = db.blogs.count_documents({'is_published': True})
     skill_count = db.skills.count_documents({})
     
+    # Calculate aggregate view statistics
+    total_blog_views = sum(b.get('views', 0) for b in db.blogs.find({}, {'views': 1}))
+    total_project_views = sum(p.get('views', 0) for p in db.projects.find({}, {'views': 1}))
+    
+    # Retrieve homepage views from Profile
+    profile = db.profile.find_one() or {}
+    homepage_views = profile.get('views', 0)
+    
     recent_blogs = list(db.blogs.find().sort('created_at', -1).limit(5))
     for b in recent_blogs:
         b['id'] = str(b['_id'])
@@ -60,13 +68,30 @@ def dashboard(request):
     for p in recent_projects:
         p['id'] = str(p['_id'])
         
+    # Fetch most viewed (popular) blogs and projects
+    popular_blogs = list(db.blogs.find().sort('views', -1).limit(5))
+    for b in popular_blogs:
+        b['id'] = str(b['_id'])
+        b['views'] = b.get('views', 0)
+        
+    popular_projects = list(db.projects.find().sort('views', -1).limit(5))
+    for p in popular_projects:
+        p['id'] = str(p['_id'])
+        p['views'] = p.get('views', 0)
+        
     return render(request, 'main/admin/dashboard.html', {
         'project_count': project_count,
         'blog_count': blog_count,
         'published_blog_count': published_blog_count,
         'skill_count': skill_count,
+        'homepage_views': homepage_views,
+        'total_blog_views': total_blog_views,
+        'total_project_views': total_project_views,
+        'total_views': homepage_views + total_blog_views + total_project_views,
         'recent_blogs': recent_blogs,
         'recent_projects': recent_projects,
+        'popular_blogs': popular_blogs,
+        'popular_projects': popular_projects,
     })
 
 @admin_required

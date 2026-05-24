@@ -36,6 +36,9 @@ def index(request):
     # Get published blogs for index
     blogs = list(db.blogs.find({'is_published': True}).sort('created_at', -1).limit(3))
     
+    # Increment profile (homepage) view count
+    db.profile.update_one({}, {'$inc': {'views': 1}}, upsert=True)
+    
     # Get profile
     profile = db.profile.find_one() or {}
     
@@ -81,6 +84,8 @@ def index(request):
 
 def project_detail(request, project_slug):
     db = get_db()
+    # Increment view counter
+    db.projects.update_one({'slug': project_slug}, {'$inc': {'views': 1}})
     project = db.projects.find_one({'slug': project_slug})
     if project:
         project['id'] = str(project['_id'])
@@ -164,6 +169,8 @@ def blog_index(request):
 
 def blog_detail(request, blog_slug):
     db = get_db()
+    # Increment view counter
+    db.blogs.update_one({'slug': blog_slug}, {'$inc': {'views': 1}})
     blog = db.blogs.find_one({'slug': blog_slug})
     if blog:
         blog['id'] = str(blog['_id'])

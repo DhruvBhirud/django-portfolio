@@ -104,7 +104,89 @@
         </div>
     </div>
 
+    <!-- Traffic/Views Statistics Grid -->
+    <h2 style="color: #2c3e50; margin: 35px 0 15px 0; font-size: 1.4rem; border-bottom: 2px solid #eee; padding-bottom: 8px;">Traffic & Engagement</h2>
+    <div class="stats-grid">
+        <div class="stat-card" style="border-top: 4px solid #9b59b6;">
+            <div class="stat-icon" style="color: #9b59b6;"><i class="fas fa-chart-line"></i></div>
+            <div class="stat-value" style="color: #9b59b6;">{{ total_views }}</div>
+            <div class="stat-label">Total Views</div>
+        </div>
+        <div class="stat-card" style="border-top: 4px solid #3498db;">
+            <div class="stat-icon" style="color: #3498db;"><i class="fas fa-home"></i></div>
+            <div class="stat-value" style="color: #3498db;">{{ homepage_views }}</div>
+            <div class="stat-label">Homepage Views</div>
+        </div>
+        <div class="stat-card" style="border-top: 4px solid #2ecc71;">
+            <div class="stat-icon" style="color: #2ecc71;"><i class="fas fa-book-open"></i></div>
+            <div class="stat-value" style="color: #2ecc71;">{{ total_blog_views }}</div>
+            <div class="stat-label">Blog Views</div>
+        </div>
+        <div class="stat-card" style="border-top: 4px solid #e67e22;">
+            <div class="stat-icon" style="color: #e67e22;"><i class="fas fa-project-diagram"></i></div>
+            <div class="stat-value" style="color: #e67e22;">{{ total_project_views }}</div>
+            <div class="stat-label">Project Views</div>
+        </div>
+    </div>
+
+    <!-- Popularity Analytics -->
+    <h2 style="color: #2c3e50; margin: 35px 0 15px 0; font-size: 1.4rem; border-bottom: 2px solid #eee; padding-bottom: 8px;">Popular Content</h2>
+    <div class="dashboard-tables" style="margin-bottom: 35px;">
+        <div class="table-container">
+            <h3>Top Viewed Projects</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Project Title</th>
+                        <th style="width: 100px; text-align: right;">Views</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in popular_projects %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'admin_project_edit' project.id %}" style="text-decoration: none; color: #3498db; font-weight: 500;">
+                                {{ project.title }}
+                            </a>
+                        </td>
+                        <td style="font-weight: bold; color: #2c3e50; text-align: right;"><i class="far fa-eye" style="color: #95a5a6; margin-right: 5px;"></i> {{ project.views }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="2">No projects viewed yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-container">
+            <h3>Top Viewed Blogs</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Blog Title</th>
+                        <th style="width: 100px; text-align: right;">Views</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for blog in popular_blogs %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'admin_blog_edit' blog.id %}" style="text-decoration: none; color: #3498db; font-weight: 500;">
+                                {{ blog.title }}
+                            </a>
+                        </td>
+                        <td style="font-weight: bold; color: #2c3e50; text-align: right;"><i class="far fa-eye" style="color: #95a5a6; margin-right: 5px;"></i> {{ blog.views }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="2">No blogs viewed yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <!-- Recent Activity Tables -->
+    <h2 style="color: #2c3e50; margin: 35px 0 15px 0; font-size: 1.4rem; border-bottom: 2px solid #eee; padding-bottom: 8px;">Recent Creations</h2>
     <div class="dashboard-tables">
         <div class="table-container">
             <h3>Recent Projects</h3>

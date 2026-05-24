@@ -16,6 +16,8 @@ class Profile(models.Model):
     github = models.URLField(blank=True, null=True)
     linkedin = models.URLField(blank=True, null=True)
     resume_url = models.URLField(blank=True, null=True)
+    views = models.IntegerField(default=0)
+
     class Meta:
         managed = False
 
@@ -31,6 +33,7 @@ class Project(models.Model):
     long_description = models.TextField()
     order = models.IntegerField(default=0)
     is_featured = models.BooleanField(default=False)
+    views = models.IntegerField(default=0)
 
     class Meta:
         managed = False
@@ -56,6 +59,7 @@ class Blog(models.Model):
     tags = models.CharField(max_length=200, blank=True, null=True)  # Comma-separated list of tags
     is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    views = models.IntegerField(default=0)
 
     class Meta:
         managed = False
