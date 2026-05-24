@@ -448,9 +448,15 @@ def admin_settings(request):
         
         # Update General Settings
         max_msgs = int(request.POST.get('max_messages', 50))
+        turnstile_site_key = request.POST.get('turnstile_site_key', '').strip()
+        turnstile_secret_key = request.POST.get('turnstile_secret_key', '').strip()
         db.settings.update_one(
             {'type': 'general'}, 
-            {'$set': {'max_messages': max_msgs}}, 
+            {'$set': {
+                'max_messages': max_msgs,
+                'turnstile_site_key': turnstile_site_key,
+                'turnstile_secret_key': turnstile_secret_key,
+            }}, 
             upsert=True
         )
         

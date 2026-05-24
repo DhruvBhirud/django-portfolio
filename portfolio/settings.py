@@ -136,6 +136,11 @@ MONGODB_URI = os.environ.get('MONGODB_URI')
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
 
+# Cloudflare Turnstile CAPTCHA keys (fallback to test keys)
+TURNSTILE_SITE_KEY = os.environ.get('TURNSTILE_SITE_KEY', '1x00000000000000000000AA')
+TURNSTILE_SECRET_KEY = os.environ.get('TURNSTILE_SECRET_KEY', '1x0000000000000000000000000000000AA')
+
+
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api

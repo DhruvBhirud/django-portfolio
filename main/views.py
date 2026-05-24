@@ -67,6 +67,11 @@ def index(request):
             b['slug'] = slugify(b.get('title', b['id']))
             db.blogs.update_one({'_id': b['_id']}, {'$set': {'slug': b['slug']}})
     
+    # Get general settings for Turnstile Site Key
+    general_settings = db.settings.find_one({'type': 'general'}) or {}
+    from django.conf import settings
+    turnstile_site_key = general_settings.get('turnstile_site_key') or getattr(settings, 'TURNSTILE_SITE_KEY', '1x00000000000000000000AA')
+    
     context = {
         'projects': projects,
         'all_techs': sorted(list(all_techs)),
@@ -79,6 +84,7 @@ def index(request):
         'github': profile.get('github', 'https://github.com/yourusername'),
         'linkedin': profile.get('linkedin', 'https://linkedin.com/in/yourusername'),
         'resume_url': profile.get('resume_url', ''),
+        'turnstile_site_key': turnstile_site_key,
     }
     return render(request, 'main/index.html', context)
 
@@ -221,6 +227,43 @@ def send_admin_notification(message_data):
 @ratelimit_post(limit=3, period=300)
 def submit_contact(request):
     if request.method == 'POST':
+        db = get_db()
+        general_settings = db.settings.find_one({'type': 'general'}) or {}
+        from django.conf import settings
+        turnstile_secret_key = general_settings.get('turnstile_secret_key') or getattr(settings, 'TURNSTILE_SECRET_KEY', '1x0000000000000000000000000000000AA')
+        
+        # Verify Turnstile response
+        turnstile_response = request.POST.get('cf-turnstile-response')
+        if not turnstile_response:
+            messages.error(request, "CAPTCHA verification is required. Please try again.")
+            return redirect('index')
+            
+        import urllib.request
+        import urllib.parse
+        
+        verify_url = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+        post_data = urllib.parse.urlencode({
+            'secret': turnstile_secret_key,
+            'response': turnstile_response,
+            'remoteip': request.META.get('REMOTE_ADDR')
+        }).encode('utf-8')
+        
+        try:
+            req = urllib.request.Request(
+                verify_url, 
+                data=post_data,
+                headers={'Content-Type': 'application/x-www-form-urlencoded'}
+            )
+            with urllib.request.urlopen(req, timeout=5) as response:
+                result = json.loads(response.read().decode('utf-8'))
+                
+            if not result.get('success'):
+                messages.error(request, "CAPTCHA verification failed. Please prove you are not a robot.")
+                return redirect('index')
+        except Exception as e:
+            # Fallback strategy: fail open in case of network issues
+            print(f"Turnstile verification exception: {e}")
+
         name = request.POST.get('name')
         email = request.POST.get('email')
         subject = request.POST.get('subject')
