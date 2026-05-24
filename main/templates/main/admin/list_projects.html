@@ -19,7 +19,12 @@
             <tbody>
                 {% for project in projects %}
                 <tr>
-                    <td>{{ project.title }}</td>
+                    <td>
+                        {{ project.title }}
+                        {% if project.is_featured %}
+                        <span class="status-badge status-featured" style="margin-left: 5px; font-size: 0.7rem;"><i class="fas fa-star"></i> Featured</span>
+                        {% endif %}
+                    </td>
                     <td>{{ project.tech }}</td>
                     <td>{{ project.order }}</td>
                     <td>
