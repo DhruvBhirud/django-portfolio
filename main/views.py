@@ -65,13 +65,59 @@ def project_detail(request, project_slug):
 def blog_index(request):
     from django.utils.text import slugify
     db = get_db()
-    blogs = list(db.blogs.find({'is_published': True}).sort('created_at', -1))
+    
+    # Get search query
+    search_term = request.GET.get('q', '').strip()
+    query = {'is_published': True}
+    if search_term:
+        query['$or'] = [
+            {'title': {'$regex': search_term, '$options': 'i'}},
+            {'content': {'$regex': search_term, '$options': 'i'}}
+        ]
+        
+    # Get total count for pagination before reading records
+    total_count = db.blogs.count_documents(query)
+    
+    # Configure pagination
+    per_page = 6
+    total_pages = (total_count + per_page - 1) // per_page
+    if total_pages < 1:
+        total_pages = 1
+        
+    try:
+        page = int(request.GET.get('page', 1))
+    except ValueError:
+        page = 1
+        
+    if page < 1:
+        page = 1
+    elif page > total_pages:
+        page = total_pages
+        
+    skip = (page - 1) * per_page
+    
+    # Fetch subset from database
+    blogs = list(db.blogs.find(query).sort('created_at', -1).skip(skip).limit(per_page))
+    
+    # Auto-heal missing slugs on paginated subset
     for b in blogs:
         b['id'] = str(b['_id'])
         if 'slug' not in b:
             b['slug'] = slugify(b.get('title', b['id']))
             db.blogs.update_one({'_id': b['_id']}, {'$set': {'slug': b['slug']}})
-    return render(request, 'main/blog_index.html', {'blogs': blogs})
+            
+    context = {
+        'blogs': blogs,
+        'q': search_term,
+        'page': page,
+        'total_pages': total_pages,
+        'has_previous': page > 1,
+        'previous_page_number': page - 1,
+        'has_next': page < total_pages,
+        'next_page_number': page + 1,
+        'pages_range': range(1, total_pages + 1),
+    }
+    return render(request, 'main/blog_index.html', context)
 
 def blog_detail(request, blog_slug):
     db = get_db()

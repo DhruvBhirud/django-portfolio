@@ -4,6 +4,17 @@
 {% block content %}
 <section class="section">
     <h2 class="section-title">All Blog Posts</h2>
+    
+    <!-- Search Bar -->
+    <div class="search-container">
+        <form method="GET" action="{% url 'blog_index' %}" class="search-form">
+            <input type="text" name="q" value="{{ q }}" placeholder="Search articles by title or content..." class="search-input">
+            <button type="submit" class="search-btn">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </form>
+    </div>
+
     <div class="projects-grid">
         {% for blog in blogs %}
         <div class="project-card">
@@ -20,8 +31,39 @@
             </div>
         </div>
         {% empty %}
-        <p class="empty-msg">No blogs available yet.</p>
+        <p class="empty-msg" style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 3rem 0;">No articles match your search or have been published yet.</p>
         {% endfor %}
     </div>
+
+    <!-- Pagination -->
+    {% if total_pages > 1 %}
+    <div class="pagination-container">
+        {% if has_previous %}
+        <a href="?page={{ previous_page_number }}{% if q %}&q={{ q }}{% endif %}" class="pagination-link" aria-label="Previous Page">
+            <i class="fas fa-chevron-left"></i>
+        </a>
+        {% else %}
+        <span class="pagination-link disabled">
+            <i class="fas fa-chevron-left"></i>
+        </span>
+        {% endif %}
+
+        {% for p_num in pages_range %}
+            <a href="?page={{ p_num }}{% if q %}&q={{ q }}{% endif %}" class="pagination-link {% if p_num == page %}active{% endif %}">
+                {{ p_num }}
+            </a>
+        {% endfor %}
+
+        {% if has_next %}
+        <a href="?page={{ next_page_number }}{% if q %}&q={{ q }}{% endif %}" class="pagination-link" aria-label="Next Page">
+            <i class="fas fa-chevron-right"></i>
+        </a>
+        {% else %}
+        <span class="pagination-link disabled">
+            <i class="fas fa-chevron-right"></i>
+        </span>
+        {% endif %}
+    </div>
+    {% endif %}
 </section>
 {% endblock %}
