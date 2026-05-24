@@ -7,7 +7,7 @@
         <a href="{% url 'blog_index' %}" class="back-link">← Back to Blogs</a>
         <h1 class="detail-title">{{ blog.title }}</h1>
         <div class="detail-tags" style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-            <span class="project-tag">{{ blog.created_at|date:"M d, Y" }}</span>
+            <span class="project-tag">{{ blog.created_at|date:"M d, Y" }} • {{ blog.read_time }} min read</span>
             {% if blog.tag_list %}
                 {% for tag in blog.tag_list %}
                     <a href="{% url 'blog_index' %}?tag={{ tag }}" class="blog-tag" style="margin: 0;">#{{ tag }}</a>

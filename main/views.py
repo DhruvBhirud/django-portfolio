@@ -4,8 +4,20 @@ from bson import ObjectId
 from django.contrib import messages
 from datetime import datetime
 import json
+import re
 from better_profanity import profanity
 from .decorators import ratelimit_post
+
+def calculate_read_time(content_html):
+    """Calculates read time based on 200 words per minute (WPM)."""
+    if not content_html:
+        return 1
+    # Strip HTML tags
+    clean_text = re.sub(r'<[^>]*>', '', content_html)
+    words = clean_text.split()
+    word_count = len(words)
+    read_time = (word_count + 199) // 200  # Round up division
+    return max(1, read_time)
 
 def index(request):
     db = get_db()
@@ -37,6 +49,7 @@ def index(request):
             
     for b in blogs:
         b['id'] = str(b['_id'])
+        b['read_time'] = calculate_read_time(b.get('content', ''))
         if 'slug' not in b:
             b['slug'] = slugify(b.get('title', b['id']))
             db.blogs.update_one({'_id': b['_id']}, {'$set': {'slug': b['slug']}})
@@ -106,6 +119,7 @@ def blog_index(request):
     # Auto-heal missing slugs and split tags into a list for rendering
     for b in blogs:
         b['id'] = str(b['_id'])
+        b['read_time'] = calculate_read_time(b.get('content', ''))
         if 'slug' not in b:
             b['slug'] = slugify(b.get('title', b['id']))
             db.blogs.update_one({'_id': b['_id']}, {'$set': {'slug': b['slug']}})
@@ -142,6 +156,7 @@ def blog_detail(request, blog_slug):
     blog = db.blogs.find_one({'slug': blog_slug})
     if blog:
         blog['id'] = str(blog['_id'])
+        blog['read_time'] = calculate_read_time(blog.get('content', ''))
         raw_tags = blog.get('tags', '')
         blog['tag_list'] = [t.strip() for t in raw_tags.split(',') if t.strip()] if raw_tags else []
     return render(request, 'main/blog_detail.html', {'blog': blog})
