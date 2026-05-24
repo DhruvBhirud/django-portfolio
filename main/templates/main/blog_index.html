@@ -37,6 +37,9 @@
     <div class="projects-grid">
         {% for blog in blogs %}
         <div class="project-card">
+            {% if blog.image_url %}
+            <img src="{{ blog.image_url }}" alt="{{ blog.title }}">
+            {% endif %}
             <div class="project-header">
                 <h3>{{ blog.title }}</h3>
                 <span class="project-tag">{{ blog.created_at|date:"M d, Y" }}</span>
@@ -51,10 +54,6 @@
                     </a>
                 {% endfor %}
             </div>
-            {% endif %}
-
-            {% if blog.image_url %}
-            <img src="{{ blog.image_url }}" alt="{{ blog.title }}" style="width: 100%; height: auto; border-radius: 4px; margin-bottom: 15px; max-height: 300px; object-fit: cover;">
             {% endif %}
             <p>{{ blog.content|striptags|truncatewords:40 }}</p>
             <div class="project-links mt-3" style="margin-top: 15px;">
