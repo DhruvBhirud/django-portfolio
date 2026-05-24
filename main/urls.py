@@ -7,4 +7,6 @@ urlpatterns = [
     path('blogs/', views.blog_index, name='blog_index'),
     path('blog/<slug:blog_slug>/', views.blog_detail, name='blog_detail'),
     path('contact/submit/', views.submit_contact, name='submit_contact'),
+    path('sitemap.xml', views.sitemap_view, name='sitemap'),
+    path('feed/', views.rss_feed_view, name='rss_feed'),
 ]

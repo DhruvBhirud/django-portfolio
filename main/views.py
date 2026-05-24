@@ -251,3 +251,90 @@ def submit_contact(request):
         return redirect('index')
         
     return redirect('index')
+
+def sitemap_view(request):
+    from django.http import HttpResponse
+    db = get_db()
+    base_url = request.build_absolute_uri('/').rstrip('/')
+    
+    # Fetch dynamic articles & projects
+    blogs = db.blogs.find({'is_published': True}, {'slug': 1, 'created_at': 1})
+    projects = db.projects.find({}, {'slug': 1})
+    
+    xml_items = []
+    
+    # Homepage
+    xml_items.append(f"  <url>\n    <loc>{base_url}/</loc>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>")
+    
+    # Blog Index
+    xml_items.append(f"  <url>\n    <loc>{base_url}/blogs/</loc>\n    <changefreq>daily</changefreq>\n    <priority>0.8</priority>\n  </url>")
+    
+    # Blogs
+    for b in blogs:
+        slug = b.get('slug')
+        if slug:
+            lastmod = ""
+            created = b.get('created_at')
+            if isinstance(created, datetime):
+                lastmod = f"\n    <lastmod>{created.strftime('%Y-%m-%d')}</lastmod>"
+            xml_items.append(f"  <url>\n    <loc>{base_url}/blog/{slug}/</loc>{lastmod}\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>")
+            
+    # Projects
+    for p in projects:
+        slug = p.get('slug')
+        if slug:
+            xml_items.append(f"  <url>\n    <loc>{base_url}/project/{slug}/</loc>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>")
+            
+    xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n' \
+                  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' \
+                  + '\n'.join(xml_items) + '\n' \
+                  '</urlset>'
+                  
+    return HttpResponse(xml_content, content_type='application/xml')
+
+def rss_feed_view(request):
+    from django.http import HttpResponse
+    from django.utils.feedgenerator import rfc2822_date
+    from django.utils.html import strip_tags
+    from xml.sax.saxutils import escape
+    
+    db = get_db()
+    base_url = request.build_absolute_uri('/').rstrip('/')
+    profile = db.profile.find_one() or {}
+    author_name = profile.get('name', 'Dhruv Bhirud')
+    
+    blogs = list(db.blogs.find({'is_published': True}).sort('created_at', -1).limit(20))
+    
+    rss_items = []
+    for b in blogs:
+        slug = b.get('slug')
+        title = escape(b.get('title', ''))
+        desc = escape(strip_tags(b.get('content', ''))[:300] + '...')
+        link = f"{base_url}/blog/{slug}/"
+        
+        pub_date = ""
+        created = b.get('created_at')
+        if isinstance(created, datetime):
+            pub_date = f"\n      <pubDate>{rfc2822_date(created)}</pubDate>"
+            
+        rss_items.append(
+            f"    <item>\n"
+            f"      <title>{title}</title>\n"
+            f"      <link>{link}</link>\n"
+            f"      <description>{desc}</description>\n"
+            f"      <guid>{link}</guid>{pub_date}\n"
+            f"    </item>"
+        )
+        
+    rss_content = '<?xml version="1.0" encoding="utf-8"?>\n' \
+                  '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n' \
+                  '  <channel>\n' \
+                  f'    <title>{author_name}\'s Blog</title>\n' \
+                  f'    <link>{base_url}/blogs/</link>\n' \
+                  f'    <description>Recent articles and thoughts from {author_name}</description>\n' \
+                  f'    <atom:link href="{base_url}/feed/" rel="self" type="application/rss+xml" />\n' \
+                  + '\n'.join(rss_items) + '\n' \
+                  '  </channel>\n' \
+                  '</rss>'
+                  
+    return HttpResponse(rss_content, content_type='application/rss+xml')

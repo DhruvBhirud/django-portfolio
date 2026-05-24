@@ -1,6 +1,26 @@
 {% extends 'main/base.html' %}
 {% block title %}{{ project.title }} - Portfolio{% endblock %}
 
+{% block meta %}
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+<meta property="og:title" content="{{ project.title }}">
+<meta property="og:description" content="{{ project.description }}">
+{% if project.image_url %}
+<meta property="og:image" content="{{ project.image_url }}">
+{% endif %}
+
+<!-- Twitter -->
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:url" content="{{ request.build_absolute_uri }}">
+<meta property="twitter:title" content="{{ project.title }}">
+<meta property="twitter:description" content="{{ project.description }}">
+{% if project.image_url %}
+<meta property="twitter:image" content="{{ project.image_url }}">
+{% endif %}
+{% endblock %}
+
 {% block content %}
 <section class="section detail-section">
     <div class="detail-container">
