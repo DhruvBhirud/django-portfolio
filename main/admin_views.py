@@ -304,6 +304,7 @@ def edit_project(request, project_id=None):
             'live_url': request.POST.get('live_url'),
             'long_description': request.POST.get('long_description'),
             'order': int(request.POST.get('order', 0)),
+            'is_featured': request.POST.get('is_featured') == 'on',
         }
         
         # Keep existing image url if editing

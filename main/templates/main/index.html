@@ -196,9 +196,30 @@
 <!-- Projects -->
 <section class="section" id="projects">
     <h2 class="section-title">Projects</h2>
-    <div class="projects-grid">
+
+    <!-- Project Tech Filter Bar -->
+    {% if all_techs %}
+    <div class="tags-filter-bar" style="margin-bottom: 2.5rem;">
+        <button class="tag-pill active" onclick="filterProjects('all', this)" style="cursor: pointer; font-family: inherit; outline: none;">
+            All Projects
+        </button>
+        {% for tech in all_techs %}
+        <button class="tag-pill" onclick="filterProjects('{{ tech|escapejs }}', this)" style="cursor: pointer; font-family: inherit; outline: none;">
+            {{ tech }}
+        </button>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="projects-grid" id="projects-grid">
         {% for project in projects %}
-        <div class="project-card">
+        <div class="project-card" data-tech="{{ project.tech }}" style="transition: opacity 0.4s ease, transform 0.4s ease, border-color 0.3s;">
+            {% if project.is_featured %}
+            <div class="featured-badge">
+                <i class="fas fa-star"></i> Featured
+            </div>
+            {% endif %}
+            
             {% if project.image_url %}
             <img src="{{ project.image_url }}" alt="{{ project.title }}">
             {% endif %}
@@ -218,7 +239,7 @@
             </div>
         </div>
         {% empty %}
-        <p class="empty-msg">Projects coming soon!</p>
+        <p class="empty-msg" style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 3rem 0;">Projects coming soon!</p>
         {% endfor %}
     </div>
 </section>
@@ -306,4 +327,38 @@
         </div>
     </div>
 </section>
+
+<script>
+    function filterProjects(tech, buttonEl) {
+        // Toggle active button state
+        const buttons = buttonEl.parentElement.querySelectorAll('.tag-pill');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        buttonEl.classList.add('active');
+
+        const cards = document.querySelectorAll('#projects-grid .project-card');
+        
+        cards.forEach(card => {
+            const techAttr = card.getAttribute('data-tech') || '';
+            // Convert to lower case list for boundary-free matching
+            const techList = techAttr.split(',').map(t => t.trim().toLowerCase());
+            
+            if (tech === 'all' || techList.includes(tech.toLowerCase())) {
+                card.style.display = 'block';
+                // Trigger reflow/repaint to make the transition work
+                card.offsetHeight; 
+                card.style.opacity = '1';
+                card.style.transform = 'scale(1)';
+            } else {
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.95)';
+                // Wait for the transition to finish before setting display none
+                setTimeout(() => {
+                    if (card.style.opacity === '0') {
+                        card.style.display = 'none';
+                    }
+                }, 400);
+            }
+        });
+    }
+</script>
 {% endblock %}

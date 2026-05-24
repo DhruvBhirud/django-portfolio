@@ -21,7 +21,8 @@ def calculate_read_time(content_html):
 
 def index(request):
     db = get_db()
-    projects = list(db.projects.find().sort('order', 1))
+    # Sort by featured projects first, then by display order
+    projects = list(db.projects.find().sort([('is_featured', -1), ('order', 1)]))
     raw_skills = list(db.skills.find().sort('order', 1))
     
     # Group skills by category while maintaining explicit sort order per-category
@@ -40,12 +41,21 @@ def index(request):
     
     from django.utils.text import slugify
     
+    # Extract unique technologies from projects for frontend client-side filtering
+    all_techs = set()
+    
     # Convert ObjectId to string for template use, and auto-heal missing slugs
     for p in projects:
         p['id'] = str(p['_id'])
         if 'slug' not in p:
             p['slug'] = slugify(p.get('title', p['id']))
             db.projects.update_one({'_id': p['_id']}, {'$set': {'slug': p['slug']}})
+            
+        tech_str = p.get('tech', '')
+        tech_list = [t.strip() for t in tech_str.split(',') if t.strip()]
+        p['tech_list'] = tech_list
+        for t in tech_list:
+            all_techs.add(t)
             
     for b in blogs:
         b['id'] = str(b['_id'])
@@ -56,6 +66,7 @@ def index(request):
     
     context = {
         'projects': projects,
+        'all_techs': sorted(list(all_techs)),
         'grouped_skills': grouped_skills,
         'blogs': blogs,
         'name': profile.get('name', 'Dhruv Bhirud'),

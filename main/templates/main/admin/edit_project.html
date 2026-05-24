@@ -25,6 +25,12 @@
             <label>Order (Display sorting priority):</label>
             <input type="number" name="order" value="{{ project.order|default:'0' }}" required>
 
+            <label>
+                <input type="checkbox" name="is_featured" style="width: auto;" {% if project.is_featured %}checked{% endif %}>
+                Featured Project (Highlight at the top of the list)
+            </label>
+            <br><br>
+
             <label>Project Image (Cloudinary Upload):</label>
             {% if project.image_url %}
             <div style="margin-bottom: 10px;">

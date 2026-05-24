@@ -30,6 +30,7 @@ class Project(models.Model):
     live_url = models.URLField(blank=True, null=True)
     long_description = models.TextField()
     order = models.IntegerField(default=0)
+    is_featured = models.BooleanField(default=False)
 
     class Meta:
         managed = False
