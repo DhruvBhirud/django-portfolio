@@ -5,6 +5,7 @@ from django.contrib import messages
 from datetime import datetime
 import json
 from better_profanity import profanity
+from .decorators import ratelimit_post
 
 def index(request):
     db = get_db()
@@ -118,6 +119,7 @@ def send_admin_notification(message_data):
         print(f"SMTP Notification failed: {e}")
         return False
 
+@ratelimit_post(limit=3, period=300)
 def submit_contact(request):
     if request.method == 'POST':
         name = request.POST.get('name')

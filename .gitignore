@@ -8,6 +8,10 @@ __pycache__/
 # C extensions
 *.so
 
+# Graphify
+.agents
+graphify-out
+
 # Distribution / packaging
 .Python
 build/
