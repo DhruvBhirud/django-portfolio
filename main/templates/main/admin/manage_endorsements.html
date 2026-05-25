@@ -1,0 +1,82 @@
+{% extends 'main/admin/base_admin.html' %}
+{% block content %}
+    <h1>Endorsement Reviews</h1>
+    
+    <!-- Pending Endorsements -->
+    <div class="card">
+        <h2>Pending Approvals</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Skill Name</th>
+                    <th>Endorser</th>
+                    <th>Comment</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in pending %}
+                <tr>
+                    <td><strong>{{ item.skill_name }}</strong></td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.comment|default:"-(No comment)-" }}</td>
+                    <td>{{ item.created_at }}</td>
+                    <td>
+                        <div style="display: flex; gap: 5px;">
+                            <form method="post" action="{% url 'admin_endorse_approve' item.skill_id item.id %}" style="margin:0;">
+                                {% csrf_token %}
+                                <button type="submit" style="background: #2ec4b6;">Approve</button>
+                            </form>
+                            <form method="post" action="{% url 'admin_endorse_delete' item.skill_id item.id %}" style="margin:0;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-danger" onclick="return confirm('Are you sure you want to reject/delete this endorsement?')">Reject</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">No pending endorsements to review.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Approved Endorsements -->
+    <div class="card">
+        <h2>Approved Endorsements</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Skill Name</th>
+                    <th>Endorser</th>
+                    <th>Comment</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in approved %}
+                <tr>
+                    <td><strong>{{ item.skill_name }}</strong></td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.comment|default:"-(No comment)-" }}</td>
+                    <td>{{ item.created_at }}</td>
+                    <td>
+                        <form method="post" action="{% url 'admin_endorse_delete' item.skill_id item.id %}" style="margin:0;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-danger" onclick="return confirm('Are you sure you want to delete this endorsement?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">No approved endorsements.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

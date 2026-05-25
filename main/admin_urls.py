@@ -23,4 +23,7 @@ urlpatterns = [
     path('messages/view/<str:message_id>/', admin_views.view_message, name='admin_view_message'),
     path('messages/delete/<str:message_id>/', admin_views.delete_message, name='admin_delete_message'),
     path('settings/', admin_views.admin_settings, name='admin_settings'),
+    path('endorsements/', admin_views.list_endorsements, name='admin_endorsements'),
+    path('endorsements/approve/<str:skill_id>/<str:endorsement_id>/', admin_views.approve_endorse_skill, name='admin_endorse_approve'),
+    path('endorsements/delete/<str:skill_id>/<str:endorsement_id>/', admin_views.delete_endorse_skill, name='admin_endorse_delete'),
 ]

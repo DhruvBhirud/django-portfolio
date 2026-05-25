@@ -549,54 +549,14 @@
             return response.json();
         })
         .then(data => {
-            if (data.status === 'success') {
-                const countEl = document.getElementById('modal-endorsement-count');
-                countEl.textContent = parseInt(countEl.textContent) + 1;
-                
-                const listContainer = document.getElementById('endorsers-list');
-                if (listContainer.querySelector('p')) {
-                    listContainer.innerHTML = '';
-                }
-                
-                const card = document.createElement('div');
-                card.style.cssText = "display: flex; gap: 0.75rem; background: rgba(108, 99, 255, 0.05); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-card); animation: slideIn 0.3s ease;";
-                const avatarIcon = data.endorser.name.length % 2 === 0 ? 'fa-user-astronaut' : 'fa-user-ninja';
-                const commentHtml = data.endorser.comment ? `<p style="margin: 0.25rem 0 0 0; font-size: 0.9rem; color: var(--text-main); line-height: 1.4;">${escapeHtml(data.endorser.comment)}</p>` : '';
-                
-                card.innerHTML = `
-                    <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(108, 99, 255, 0.15); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.1rem; flex-shrink: 0;">
-                        <i class="fas ${avatarIcon}"></i>
-                    </div>
-                    <div style="flex: 1;">
-                        <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                           <strong style="font-size: 0.9rem; color: var(--text-main);">${escapeHtml(data.endorser.name)}</strong>
-                           <span style="font-size: 0.75rem; color: var(--text-muted);">${data.endorser.created_at}</span>
-                        </div>
-                        ${commentHtml}
-                    </div>
-                `;
-                listContainer.appendChild(card);
-                
+            if (data.status === 'pending') {
                 document.getElementById('endorse-name').value = '';
                 document.getElementById('endorse-comment').value = '';
                 
-                if (currentActiveBadge) {
-                    const countBadge = currentActiveBadge.querySelector('.badge-endorsement-count');
-                    if (countBadge) {
-                        countBadge.textContent = `+${data.endorsements}`;
-                        countBadge.style.display = 'inline-block';
-                    }
-                    
-                    const endorsersRaw = currentActiveBadge.getAttribute('data-endorsers') || '[]';
-                    let endorsers = [];
-                    try { endorsers = JSON.parse(endorsersRaw); } catch(e){}
-                    endorsers.push(data.endorser);
-                    currentActiveBadge.setAttribute('data-endorsers', JSON.stringify(endorsers));
-                }
-                
                 if (typeof showToast === 'function') {
-                    showToast('success', `Thank you for endorsing!`);
+                    showToast('success', data.message);
                 }
+                closeEndorsementsModal();
             }
         })
         .catch(error => {

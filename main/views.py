@@ -29,22 +29,23 @@ def index(request):
     grouped_skills = {}
     for skill in raw_skills:
         skill['id'] = str(skill['_id'])
-        skill['endorsements'] = skill.get('endorsements', 0)
         
-        # Serialize endorsers list
+        # Serialize approved endorsers list
         endorsers_list = []
         for endorser in skill.get('endorsers', []):
-            created = endorser.get('created_at')
-            created_str = ""
-            if isinstance(created, datetime):
-                created_str = created.strftime('%b %d, %Y')
-            elif isinstance(created, str):
-                created_str = created
-            endorsers_list.append({
-                'name': endorser.get('name', ''),
-                'comment': endorser.get('comment', ''),
-                'created_at': created_str
-            })
+            if endorser.get('approved', True) is True:
+                created = endorser.get('created_at')
+                created_str = ""
+                if isinstance(created, datetime):
+                    created_str = created.strftime('%b %d, %Y')
+                elif isinstance(created, str):
+                    created_str = created
+                endorsers_list.append({
+                    'name': endorser.get('name', ''),
+                    'comment': endorser.get('comment', ''),
+                    'created_at': created_str
+                })
+        skill['endorsements'] = len(endorsers_list)
         skill['endorsers_json'] = json.dumps(endorsers_list)
         
         cat = skill.get('category', 'Other')
@@ -486,30 +487,25 @@ def endorse_skill(request, skill_id):
     if not skill:
         return JsonResponse({'error': 'Skill not found.'}, status=404)
         
+    endorsement_id = str(ObjectId())
     new_endorser = {
+        'id': endorsement_id,
         'name': name,
         'comment': comment,
-        'created_at': datetime.now()
+        'created_at': datetime.now(),
+        'approved': False
     }
     
     db.skills.update_one(
         {'_id': ObjectId(skill_id)},
         {
-            '$inc': {'endorsements': 1},
             '$push': {'endorsers': new_endorser}
         }
     )
     
     cache.set(cache_key, True, 86400)
     
-    new_endorser_formatted = {
-        'name': name,
-        'comment': comment,
-        'created_at': new_endorser['created_at'].strftime('%b %d, %Y')
-    }
-    
     return JsonResponse({
-        'status': 'success',
-        'endorsements': skill.get('endorsements', 0) + 1,
-        'endorser': new_endorser_formatted
+        'status': 'pending',
+        'message': 'Thank you! Your endorsement has been submitted for moderation.'
     })

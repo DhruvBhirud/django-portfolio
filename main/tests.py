@@ -115,6 +115,28 @@ class MockCollection:
                         if str(doc.get('_id')) != str(v):
                             match = False
                             break
+                    elif '.' in k:
+                        parts = k.split('.')
+                        array_name = parts[0]
+                        sub_key = parts[1]
+                        
+                        val_list = doc.get(array_name)
+                        if isinstance(val_list, list):
+                            item_matched = False
+                            for item in val_list:
+                                if isinstance(item, dict) and item.get(sub_key) == v:
+                                    item_matched = True
+                                    break
+                            if not item_matched:
+                                match = False
+                                break
+                        elif isinstance(val_list, dict):
+                            if val_list.get(sub_key) != v:
+                                match = False
+                                break
+                        else:
+                            match = False
+                            break
                     else:
                         if doc.get(k) != v:
                             match = False
@@ -174,12 +196,48 @@ class MockCollection:
                     doc[k] = doc.get(k, 0) + v
             if '$set' in update:
                 for k, v in update['$set'].items():
-                    doc[k] = v
+                    if '.' in k:
+                        parts = k.split('.')
+                        if len(parts) == 3 and parts[1] == '$':
+                            array_name = parts[0]
+                            field_name = parts[2]
+                            match_id = None
+                            for fk, fv in filter.items():
+                                if fk.endswith('.id'):
+                                    match_id = fv
+                                    break
+                            
+                            if array_name in doc and isinstance(doc[array_name], list):
+                                for item in doc[array_name]:
+                                    if item.get('id') == match_id:
+                                        item[field_name] = v
+                                        break
+                        else:
+                            doc[k] = v
+                    else:
+                        doc[k] = v
             if '$push' in update:
                 for k, v in update['$push'].items():
                     if k not in doc:
                         doc[k] = []
                     doc[k].append(v)
+            if '$pull' in update:
+                for k, v in update['$pull'].items():
+                    if k in doc and isinstance(doc[k], list):
+                        if isinstance(v, dict):
+                            new_list = []
+                            for item in doc[k]:
+                                match = True
+                                for pk, pv in v.items():
+                                    if item.get(pk) != pv:
+                                        match = False
+                                        break
+                                if not match:
+                                    new_list.append(item)
+                            doc[k] = new_list
+                        else:
+                            if v in doc[k]:
+                                doc[k].remove(v)
         return MagicMock()
 
     def insert_one(self, document, *args, **kwargs):
@@ -657,6 +715,7 @@ class AdminDecoratorTests(BaseViewTestCase):
             ('admin_projects', {}),
             ('admin_messages', {}),
             ('admin_settings', {}),
+            ('admin_endorsements', {}),
         ]
         for name, kwargs in endpoints:
             response = self.client.get(reverse(name, kwargs=kwargs))
@@ -1188,7 +1247,7 @@ class SkillEndorsementTests(BaseViewTestCase):
                 'name': 'Python',
                 'category': 'Languages',
                 'order': 1,
-                'endorsements': 5,
+                'endorsements': 1,
                 'endorsers': [
                     {
                         'name': 'Alice',
@@ -1255,18 +1314,17 @@ class SkillEndorsementTests(BaseViewTestCase):
         self.assertEqual(response.status_code, 200)
         
         data = response.json()
-        self.assertEqual(data['status'], 'success')
-        self.assertEqual(data['endorsements'], 6)
-        self.assertEqual(data['endorser']['name'], 'Bob')
-        self.assertEqual(data['endorser']['comment'], 'Fantastic Django skills!')
-        self.assertIsNotNone(data['endorser']['created_at'])
+        self.assertEqual(data['status'], 'pending')
+        self.assertEqual(data['message'], 'Thank you! Your endorsement has been submitted for moderation.')
         
         # Verify db document update
         skill = self.mock_db.skills.find_one({'_id': self.skill_id})
-        self.assertEqual(skill['endorsements'], 6)
+        self.assertEqual(skill['endorsements'], 1)  # public count remains 1
         self.assertEqual(len(skill['endorsers']), 2)
         self.assertEqual(skill['endorsers'][1]['name'], 'Bob')
         self.assertEqual(skill['endorsers'][1]['comment'], 'Fantastic Django skills!')
+        self.assertFalse(skill['endorsers'][1]['approved'])
+        self.assertIsNotNone(skill['endorsers'][1]['id'])
 
     def test_endorse_skill_rate_limiting_enforced(self):
         url = reverse('endorse_skill', kwargs={'skill_id': str(self.skill_id)})
@@ -1287,7 +1345,7 @@ class SkillEndorsementTests(BaseViewTestCase):
         grouped_skills = response.context['grouped_skills']
         self.assertIn('Languages', grouped_skills)
         skill = grouped_skills['Languages'][0]
-        self.assertEqual(skill['endorsements'], 5)
+        self.assertEqual(skill['endorsements'], 1)
         
         # Decode and check serialization
         endorsers = json.loads(skill['endorsers_json'])
@@ -1295,4 +1353,88 @@ class SkillEndorsementTests(BaseViewTestCase):
         self.assertEqual(endorsers[0]['name'], 'Alice')
         self.assertEqual(endorsers[0]['comment'], 'Great coder!')
         self.assertEqual(endorsers[0]['created_at'], 'May 24, 2026')
+
+
+# ======================================================================
+# --- Admin Endorsement Moderation Tests ---
+# ======================================================================
+
+class AdminEndorsementModerationTests(AdminBaseViewTestCase):
+    def setUp(self):
+        super().setUp()
+        self.skill_id = ObjectId()
+        self.pending_id = 'pending-id-1'
+        self.approved_id = 'approved-id-2'
+        self.mock_db.skills.documents = [
+            {
+                '_id': self.skill_id,
+                'name': 'Python',
+                'category': 'Languages',
+                'order': 1,
+                'endorsements': 1,
+                'endorsers': [
+                    {
+                        'id': self.pending_id,
+                        'name': 'Alice',
+                        'comment': 'Pending endorser',
+                        'created_at': datetime(2026, 5, 24),
+                        'approved': False
+                    },
+                    {
+                        'id': self.approved_id,
+                        'name': 'Bob',
+                        'comment': 'Approved endorser',
+                        'created_at': datetime(2026, 5, 25),
+                        'approved': True
+                    }
+                ]
+            }
+        ]
+
+    def test_admin_list_endorsements_success(self):
+        response = self.client.get(reverse('admin_endorsements'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'main/admin/manage_endorsements.html')
+        
+        pending_list = response.context['pending']
+        approved_list = response.context['approved']
+        
+        self.assertEqual(len(pending_list), 1)
+        self.assertEqual(pending_list[0]['id'], self.pending_id)
+        self.assertEqual(len(approved_list), 1)
+        self.assertEqual(approved_list[0]['id'], self.approved_id)
+
+    def test_admin_approve_endorsement(self):
+        url = reverse('admin_endorse_approve', kwargs={'skill_id': str(self.skill_id), 'endorsement_id': self.pending_id})
+        response = self.client.post(url)
+        self.assertRedirects(response, reverse('admin_endorsements'))
+        
+        # Verify database update
+        skill = self.mock_db.skills.find_one({'_id': self.skill_id})
+        self.assertEqual(skill['endorsements'], 2)
+        
+        endorsement = next(e for e in skill['endorsers'] if e['id'] == self.pending_id)
+        self.assertTrue(endorsement['approved'])
+
+    def test_admin_delete_pending_endorsement(self):
+        url = reverse('admin_endorse_delete', kwargs={'skill_id': str(self.skill_id), 'endorsement_id': self.pending_id})
+        response = self.client.post(url)
+        self.assertRedirects(response, reverse('admin_endorsements'))
+        
+        # Verify removed from database
+        skill = self.mock_db.skills.find_one({'_id': self.skill_id})
+        self.assertEqual(skill['endorsements'], 1)
+        self.assertEqual(len(skill['endorsers']), 1)
+        self.assertNotIn(self.pending_id, [e['id'] for e in skill['endorsers']])
+
+    def test_admin_delete_approved_endorsement(self):
+        url = reverse('admin_endorse_delete', kwargs={'skill_id': str(self.skill_id), 'endorsement_id': self.approved_id})
+        response = self.client.post(url)
+        self.assertRedirects(response, reverse('admin_endorsements'))
+        
+        # Verify removed from database and counter decremented
+        skill = self.mock_db.skills.find_one({'_id': self.skill_id})
+        self.assertEqual(skill['endorsements'], 0)
+        self.assertEqual(len(skill['endorsers']), 1)
+        self.assertNotIn(self.approved_id, [e['id'] for e in skill['endorsers']])
 

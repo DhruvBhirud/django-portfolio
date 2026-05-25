@@ -37,6 +37,12 @@
         <a href="{% url 'admin_projects' %}"><i class="fas fa-project-diagram" style="width: 20px; margin-right: 10px;"></i> Manage Projects</a>
         <a href="{% url 'admin_blogs' %}"><i class="fas fa-blog" style="width: 20px; margin-right: 10px;"></i> Manage Blogs</a>
         <a href="{% url 'admin_skills' %}"><i class="fas fa-tools" style="width: 20px; margin-right: 10px;"></i> Manage Skills</a>
+        <a href="{% url 'admin_endorsements' %}">
+            <i class="fas fa-thumbs-up" style="width: 20px; margin-right: 10px;"></i> Endorsements
+            {% if pending_endorsements_count > 0 %}
+            <span style="background: #e74c3c; color: white; border-radius: 10px; padding: 2px 8px; font-size: 0.75rem; font-weight: bold; margin-left: 5px;">{{ pending_endorsements_count }}</span>
+            {% endif %}
+        </a>
         <a href="{% url 'admin_messages' %}"><i class="fas fa-envelope" style="width: 20px; margin-right: 10px;"></i> Inboxes & Messages</a>
         <a href="{% url 'admin_settings' %}"><i class="fas fa-cog" style="width: 20px; margin-right: 10px;"></i> System Settings</a>
         <a href="/" target="_blank"><i class="fas fa-external-link-alt" style="width: 20px; margin-right: 10px;"></i> View Site</a>

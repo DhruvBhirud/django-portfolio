@@ -521,3 +521,82 @@ def admin_settings(request):
         'smtp': smtp_settings,
         'general': general_settings
     })
+
+
+@admin_required
+def list_endorsements(request):
+    db = get_db()
+    skills = list(db.skills.find())
+    
+    pending_endorsements = []
+    approved_endorsements = []
+    
+    for skill in skills:
+        skill_id_str = str(skill['_id'])
+        skill_name = skill.get('name', 'Unknown Skill')
+        for endorser in skill.get('endorsers', []):
+            created = endorser.get('created_at')
+            created_str = ""
+            if isinstance(created, datetime):
+                created_str = created.strftime('%b %d, %Y %H:%M')
+            elif isinstance(created, str):
+                created_str = created
+            
+            item = {
+                'skill_id': skill_id_str,
+                'skill_name': skill_name,
+                'id': endorser.get('id', ''),
+                'name': endorser.get('name', ''),
+                'comment': endorser.get('comment', ''),
+                'created_at': created_str,
+                'raw_created': created if isinstance(created, datetime) else datetime.min,
+                'approved': endorser.get('approved', True)
+            }
+            
+            if item['approved']:
+                approved_endorsements.append(item)
+            else:
+                pending_endorsements.append(item)
+                
+    # Sort by raw_created descending (newest first)
+    pending_endorsements.sort(key=lambda x: x['raw_created'], reverse=True)
+    approved_endorsements.sort(key=lambda x: x['raw_created'], reverse=True)
+    
+    return render(request, 'main/admin/manage_endorsements.html', {
+        'pending': pending_endorsements,
+        'approved': approved_endorsements
+    })
+
+
+@admin_required
+def approve_endorse_skill(request, skill_id, endorsement_id):
+    if request.method == 'POST':
+        db = get_db()
+        db.skills.update_one(
+            {'_id': ObjectId(skill_id), 'endorsers.id': endorsement_id},
+            {
+                '$set': {'endorsers.$.approved': True},
+                '$inc': {'endorsements': 1}
+            }
+        )
+    return redirect('admin_endorsements')
+
+
+@admin_required
+def delete_endorse_skill(request, skill_id, endorsement_id):
+    if request.method == 'POST':
+        db = get_db()
+        skill = db.skills.find_one({'_id': ObjectId(skill_id)})
+        if skill:
+            endorsement = next((e for e in skill.get('endorsers', []) if e.get('id') == endorsement_id), None)
+            if endorsement:
+                was_approved = endorsement.get('approved', True)
+                dec_value = -1 if was_approved else 0
+                db.skills.update_one(
+                    {'_id': ObjectId(skill_id)},
+                    {
+                        '$pull': {'endorsers': {'id': endorsement_id}},
+                        '$inc': {'endorsements': dec_value}
+                    }
+                )
+    return redirect('admin_endorsements')
