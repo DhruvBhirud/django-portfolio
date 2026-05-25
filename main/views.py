@@ -399,3 +399,16 @@ def rss_feed_view(request):
                   '</rss>'
                   
     return HttpResponse(rss_content, content_type='application/rss+xml')
+
+def robots_txt_view(request):
+    from django.http import HttpResponse
+    base_url = request.build_absolute_uri('/').rstrip('/')
+    content = (
+        "User-agent: *\n"
+        "Disallow: /admin/\n"
+        "Allow: /blogs/\n"
+        "Allow: /project/\n"
+        "Allow: /\n"
+        f"Sitemap: {base_url}/sitemap.xml\n"
+    )
+    return HttpResponse(content, content_type='text/plain')
