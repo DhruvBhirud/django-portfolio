@@ -10,4 +10,5 @@ urlpatterns = [
     path('sitemap.xml', views.sitemap_view, name='sitemap'),
     path('feed/', views.rss_feed_view, name='rss_feed'),
     path('robots.txt', views.robots_txt_view, name='robots_txt'),
+    path('skills/<str:skill_id>/endorse/', views.endorse_skill, name='endorse_skill'),
 ]

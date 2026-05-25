@@ -28,6 +28,25 @@ def index(request):
     # Group skills by category while maintaining explicit sort order per-category
     grouped_skills = {}
     for skill in raw_skills:
+        skill['id'] = str(skill['_id'])
+        skill['endorsements'] = skill.get('endorsements', 0)
+        
+        # Serialize endorsers list
+        endorsers_list = []
+        for endorser in skill.get('endorsers', []):
+            created = endorser.get('created_at')
+            created_str = ""
+            if isinstance(created, datetime):
+                created_str = created.strftime('%b %d, %Y')
+            elif isinstance(created, str):
+                created_str = created
+            endorsers_list.append({
+                'name': endorser.get('name', ''),
+                'comment': endorser.get('comment', ''),
+                'created_at': created_str
+            })
+        skill['endorsers_json'] = json.dumps(endorsers_list)
+        
         cat = skill.get('category', 'Other')
         if cat not in grouped_skills:
             grouped_skills[cat] = []
@@ -418,3 +437,79 @@ def handler404(request, exception=None):
 
 def handler500(request):
     return render(request, '500.html', status=500)
+
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def endorse_skill(request, skill_id):
+    from django.http import JsonResponse
+    from django.core.cache import cache
+    from bson import ObjectId
+    from better_profanity import profanity
+    
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method.'}, status=405)
+        
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'error': 'Invalid JSON payload.'}, status=400)
+        
+    name = data.get('name', '').strip()
+    comment = data.get('comment', '').strip()
+    
+    if not name:
+        return JsonResponse({'error': 'Name is required.'}, status=400)
+        
+    if len(name) > 50:
+        return JsonResponse({'error': 'Name must be 50 characters or less.'}, status=400)
+        
+    if len(comment) > 200:
+        return JsonResponse({'error': 'Comment must be 200 characters or less.'}, status=400)
+        
+    if profanity.contains_profanity(name) or profanity.contains_profanity(comment):
+        return JsonResponse({'error': 'Inappropriate content detected.'}, status=400)
+        
+    # Rate limiting: 1 endorsement per IP per skill every 24 hours
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0].strip()
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+        
+    cache_key = f"endorse_{ip}_{skill_id}"
+    if cache.get(cache_key):
+        return JsonResponse({'error': 'You have already endorsed this skill recently. Please try again tomorrow.'}, status=429)
+        
+    db = get_db()
+    skill = db.skills.find_one({'_id': ObjectId(skill_id)})
+    if not skill:
+        return JsonResponse({'error': 'Skill not found.'}, status=404)
+        
+    new_endorser = {
+        'name': name,
+        'comment': comment,
+        'created_at': datetime.now()
+    }
+    
+    db.skills.update_one(
+        {'_id': ObjectId(skill_id)},
+        {
+            '$inc': {'endorsements': 1},
+            '$push': {'endorsers': new_endorser}
+        }
+    )
+    
+    cache.set(cache_key, True, 86400)
+    
+    new_endorser_formatted = {
+        'name': name,
+        'comment': comment,
+        'created_at': new_endorser['created_at'].strftime('%b %d, %Y')
+    }
+    
+    return JsonResponse({
+        'status': 'success',
+        'endorsements': skill.get('endorsements', 0) + 1,
+        'endorser': new_endorser_formatted
+    })

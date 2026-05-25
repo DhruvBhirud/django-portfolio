@@ -251,13 +251,18 @@
     <h3 style="margin-top: 30px; margin-bottom: 15px; text-transform: uppercase; font-size: 1.1rem; color: #7f8c8d; letter-spacing: 1px;">{{ category }}</h3>
     <div class="skills-grid">
         {% for skill in skills %}
-        <div class="skill-badge" style="display: flex; align-items: center;">
-            {% if skill.image_url %}
-            <img src="{{ skill.image_url }}" alt="{{ skill.name }} icon" style="height: 1.2em; width: auto; max-width: 2em; margin-right: 5px; object-fit: contain;">
-            {% elif skill.icon_class %}
-            <i class="{{ skill.icon_class }}" style="margin-right: 5px; font-size: 1.2em;"></i>
-            {% endif %}
-            {{ skill.name }}
+        <div class="skill-badge clickable-skill" data-id="{{ skill.id }}" data-name="{{ skill.name }}" data-endorsers="{{ skill.endorsers_json }}" onclick="openEndorsementsModal(this)" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.3s; user-select: none; border-radius: 8px; border: 1px solid var(--border-card);">
+            <div style="display: flex; align-items: center;">
+                {% if skill.image_url %}
+                <img src="{{ skill.image_url }}" alt="{{ skill.name }} icon" style="height: 1.2em; width: auto; max-width: 2em; margin-right: 8px; object-fit: contain;">
+                {% elif skill.icon_class %}
+                <i class="{{ skill.icon_class }}" style="margin-right: 8px; font-size: 1.2em;"></i>
+                {% endif %}
+                <span>{{ skill.name }}</span>
+            </div>
+            <span class="badge-endorsement-count" style="margin-left: 10px; background: rgba(108, 99, 255, 0.15); color: var(--primary); padding: 0.15rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700; min-width: 28px; text-align: center; display: {% if skill.endorsements > 0 %}inline-block{% else %}none{% endif %};">
+                +{{ skill.endorsements }}
+            </span>
         </div>
         {% endfor %}
     </div>
@@ -364,6 +369,255 @@
                 }, 400);
             }
         });
+    }
+</script>
+
+<!-- Skill Endorsements Modal -->
+<div id="endorse-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease;">
+    <div class="modal-card" style="position: relative; max-width: 500px; width: 90%; max-height: 85vh; background: rgba(26, 26, 46, 0.85); border: 1px solid rgba(108, 99, 255, 0.25); border-radius: 16px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; transform: scale(0.95); transition: transform 0.3s ease; color: var(--text-main);">
+        
+        <!-- Header -->
+        <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <h3 id="modal-skill-title" style="margin: 0; font-size: 1.3rem; font-weight: 700; color: var(--primary);">Skill Name</h3>
+            <button onclick="closeEndorsementsModal()" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; transition: color 0.3s;"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <!-- Body -->
+        <div id="modal-body-scroll" style="flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+            <div id="endorsers-container">
+                <h4 style="font-size: 0.95rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 0.75rem;">Endorsements (<span id="modal-endorsement-count">0</span>)</h4>
+                <div id="endorsers-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form Footer -->
+        <div style="padding: 1.5rem; border-top: 1px solid var(--border-color); background: rgba(10, 10, 20, 0.3);">
+            <form id="endorse-form" onsubmit="submitEndorsement(event)">
+                <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem; font-weight: 600;">Endorse this skill</h4>
+                <input type="hidden" id="endorse-skill-id">
+                <div style="margin-bottom: 0.75rem;">
+                    <input type="text" id="endorse-name" placeholder="Your Name" required maxlength="50" style="width: 100%; padding: 0.6rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-family: inherit; font-size: 0.9rem; outline: none; transition: border-color 0.3s;">
+                </div>
+                <div style="margin-bottom: 0.75rem;">
+                    <input type="text" id="endorse-comment" placeholder="Optional Comment (e.g. 'Dhruv is a Django expert!')" maxlength="200" style="width: 100%; padding: 0.6rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-family: inherit; font-size: 0.9rem; outline: none; transition: border-color 0.3s;">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem; font-size: 0.9rem;">
+                    <i class="fas fa-thumbs-up"></i> Endorse
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.clickable-skill:hover {
+    border-color: var(--primary) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108, 99, 255, 0.15);
+}
+
+:root.light-mode #endorse-modal .modal-card {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(108, 99, 255, 0.2) !important;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+}
+
+#modal-body-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+#modal-body-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+#modal-body-scroll::-webkit-scrollbar-thumb {
+    background: rgba(108, 99, 255, 0.3);
+    border-radius: 3px;
+}
+#modal-body-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<script>
+    let currentActiveBadge = null;
+
+    function openEndorsementsModal(badgeEl) {
+        currentActiveBadge = badgeEl;
+        const skillId = badgeEl.getAttribute('data-id');
+        const skillName = badgeEl.getAttribute('data-name');
+        const endorsersRaw = badgeEl.getAttribute('data-endorsers');
+        
+        let endorsers = [];
+        try {
+            endorsers = JSON.parse(endorsersRaw || '[]');
+        } catch(e) {
+            console.error("Failed to parse endorsers JSON", e);
+        }
+        
+        document.getElementById('modal-skill-title').textContent = skillName;
+        document.getElementById('endorse-skill-id').value = skillId;
+        document.getElementById('modal-endorsement-count').textContent = endorsers.length;
+        
+        document.getElementById('endorse-name').value = '';
+        document.getElementById('endorse-comment').value = '';
+        
+        const listContainer = document.getElementById('endorsers-list');
+        listContainer.innerHTML = '';
+        
+        if (endorsers.length === 0) {
+            listContainer.innerHTML = `<p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 1.5rem 0;">Be the first to endorse ${skillName}!</p>`;
+        } else {
+            endorsers.forEach(endorser => {
+                const commentHtml = endorser.comment ? `<p style="margin: 0.25rem 0 0 0; font-size: 0.9rem; color: var(--text-main); line-height: 1.4;">${escapeHtml(endorser.comment)}</p>` : '';
+                const card = document.createElement('div');
+                card.style.cssText = "display: flex; gap: 0.75rem; background: rgba(108, 99, 255, 0.05); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-card);";
+                
+                const avatarIcon = endorser.name.length % 2 === 0 ? 'fa-user-astronaut' : 'fa-user-ninja';
+                
+                card.innerHTML = `
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(108, 99, 255, 0.15); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.1rem; flex-shrink: 0;">
+                        <i class="fas ${avatarIcon}"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                           <strong style="font-size: 0.9rem; color: var(--text-main);">${escapeHtml(endorser.name)}</strong>
+                           <span style="font-size: 0.75rem; color: var(--text-muted);">${endorser.created_at}</span>
+                        </div>
+                        ${commentHtml}
+                    </div>
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+        
+        const modal = document.getElementById('endorse-modal');
+        modal.style.display = 'flex';
+        modal.offsetHeight;
+        modal.style.opacity = '1';
+        modal.querySelector('.modal-card').style.transform = 'scale(1)';
+    }
+
+    function closeEndorsementsModal() {
+        const modal = document.getElementById('endorse-modal');
+        modal.style.opacity = '0';
+        modal.querySelector('.modal-card').style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+        currentActiveBadge = null;
+    }
+
+    window.addEventListener('click', (e) => {
+        const modal = document.getElementById('endorse-modal');
+        if (e.target === modal) {
+            closeEndorsementsModal();
+        }
+    });
+
+    function submitEndorsement(event) {
+        event.preventDefault();
+        
+        const skillId = document.getElementById('endorse-skill-id').value;
+        const name = document.getElementById('endorse-name').value.trim();
+        const comment = document.getElementById('endorse-comment').value.trim();
+        
+        if (!name) return;
+        
+        const submitBtn = document.getElementById('endorse-form').querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Submitting...`;
+        
+        fetch(`/skills/${skillId}/endorse/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ name, comment })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.error || 'Failed to submit.') });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                const countEl = document.getElementById('modal-endorsement-count');
+                countEl.textContent = parseInt(countEl.textContent) + 1;
+                
+                const listContainer = document.getElementById('endorsers-list');
+                if (listContainer.querySelector('p')) {
+                    listContainer.innerHTML = '';
+                }
+                
+                const card = document.createElement('div');
+                card.style.cssText = "display: flex; gap: 0.75rem; background: rgba(108, 99, 255, 0.05); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-card); animation: slideIn 0.3s ease;";
+                const avatarIcon = data.endorser.name.length % 2 === 0 ? 'fa-user-astronaut' : 'fa-user-ninja';
+                const commentHtml = data.endorser.comment ? `<p style="margin: 0.25rem 0 0 0; font-size: 0.9rem; color: var(--text-main); line-height: 1.4;">${escapeHtml(data.endorser.comment)}</p>` : '';
+                
+                card.innerHTML = `
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(108, 99, 255, 0.15); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.1rem; flex-shrink: 0;">
+                        <i class="fas ${avatarIcon}"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                           <strong style="font-size: 0.9rem; color: var(--text-main);">${escapeHtml(data.endorser.name)}</strong>
+                           <span style="font-size: 0.75rem; color: var(--text-muted);">${data.endorser.created_at}</span>
+                        </div>
+                        ${commentHtml}
+                    </div>
+                `;
+                listContainer.appendChild(card);
+                
+                document.getElementById('endorse-name').value = '';
+                document.getElementById('endorse-comment').value = '';
+                
+                if (currentActiveBadge) {
+                    const countBadge = currentActiveBadge.querySelector('.badge-endorsement-count');
+                    if (countBadge) {
+                        countBadge.textContent = `+${data.endorsements}`;
+                        countBadge.style.display = 'inline-block';
+                    }
+                    
+                    const endorsersRaw = currentActiveBadge.getAttribute('data-endorsers') || '[]';
+                    let endorsers = [];
+                    try { endorsers = JSON.parse(endorsersRaw); } catch(e){}
+                    endorsers.push(data.endorser);
+                    currentActiveBadge.setAttribute('data-endorsers', JSON.stringify(endorsers));
+                }
+                
+                if (typeof showToast === 'function') {
+                    showToast('success', `Thank you for endorsing!`);
+                }
+            }
+        })
+        .catch(error => {
+            console.error("Endorsement error:", error);
+            if (typeof showToast === 'function') {
+                showToast('error', error.message || 'Verification failed. Please try again.');
+            }
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        });
+    }
+
+    function escapeHtml(text) {
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
     }
 </script>
 {% endblock %}

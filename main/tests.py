@@ -63,9 +63,9 @@ class MockCollection:
         self.db = db
         self.documents = []
 
-    def find(self, filter=None, projection=None):
+    def _find_internal(self, filter=None):
         if not filter:
-            return MockCursor(self.documents)
+            return list(self.documents)
 
         filtered_docs = []
         import re
@@ -122,25 +122,42 @@ class MockCollection:
             if match:
                 filtered_docs.append(doc)
 
-        return MockCursor(filtered_docs)
+        return filtered_docs
+
+    def find(self, filter=None, projection=None):
+        docs = self._find_internal(filter)
+        import copy
+        copied_docs = [copy.deepcopy(d) for d in docs]
+        return MockCursor(copied_docs)
 
     def find_one(self, filter=None, *args, **kwargs):
-        cursor = self.find(filter)
-        sort_arg = kwargs.get('sort')
-        if sort_arg:
-            cursor.sort(sort_arg)
-        elif len(args) > 0 and (isinstance(args[0], list) or isinstance(args[0], tuple)):
-            cursor.sort(args[0])
-
-        if len(cursor.data) > 0:
-            return cursor.data[0]
+        docs = self._find_internal(filter)
+        if len(docs) > 0:
+            cursor = MockCursor(docs)
+            sort_arg = kwargs.get('sort')
+            if sort_arg:
+                cursor.sort(sort_arg)
+            elif len(args) > 0 and (isinstance(args[0], list) or isinstance(args[0], tuple)):
+                cursor.sort(args[0])
+            import copy
+            return copy.deepcopy(cursor.data[0])
         return None
 
     def count_documents(self, filter, *args, **kwargs):
-        return len(self.find(filter).data)
+        return len(self._find_internal(filter))
 
     def update_one(self, filter, update, *args, **kwargs):
-        doc = self.find_one(filter)
+        docs = self._find_internal(filter)
+        doc = None
+        if len(docs) > 0:
+            cursor = MockCursor(docs)
+            sort_arg = kwargs.get('sort')
+            if sort_arg:
+                cursor.sort(sort_arg)
+            elif len(args) > 0 and (isinstance(args[0], list) or isinstance(args[0], tuple)):
+                cursor.sort(args[0])
+            doc = cursor.data[0]
+
         upsert = kwargs.get('upsert', False)
         if not doc and upsert:
             doc = {}
@@ -158,6 +175,11 @@ class MockCollection:
             if '$set' in update:
                 for k, v in update['$set'].items():
                     doc[k] = v
+            if '$push' in update:
+                for k, v in update['$push'].items():
+                    if k not in doc:
+                        doc[k] = []
+                    doc[k].append(v)
         return MagicMock()
 
     def insert_one(self, document, *args, **kwargs):
@@ -173,14 +195,15 @@ class MockCollection:
         return MagicMock()
 
     def delete_one(self, filter, *args, **kwargs):
-        doc = self.find_one(filter)
-        if doc:
+        docs = self._find_internal(filter)
+        if len(docs) > 0:
+            doc = docs[0]
             self.documents.remove(doc)
         return MagicMock()
 
     def distinct(self, key, filter=None, *args, **kwargs):
         values = set()
-        for doc in self.find(filter):
+        for doc in self._find_internal(filter):
             val = doc.get(key)
             if val is not None:
                 values.add(val)
@@ -1149,3 +1172,127 @@ class ErrorPageTests(SimpleTestCase):
         # 500 error page should contain 500 and Internal Server Error
         self.assertContains(response, '500', status_code=500)
         self.assertContains(response, 'Internal Server Error', status_code=500)
+
+
+# ======================================================================
+# --- Skill Endorsement Endpoint & Rate Limiting Tests ---
+# ======================================================================
+
+class SkillEndorsementTests(BaseViewTestCase):
+    def setUp(self):
+        super().setUp()
+        self.skill_id = ObjectId()
+        self.mock_db.skills.documents = [
+            {
+                '_id': self.skill_id,
+                'name': 'Python',
+                'category': 'Languages',
+                'order': 1,
+                'endorsements': 5,
+                'endorsers': [
+                    {
+                        'name': 'Alice',
+                        'comment': 'Great coder!',
+                        'created_at': datetime(2026, 5, 24)
+                    }
+                ]
+            }
+        ]
+
+    def test_endorse_skill_invalid_method(self):
+        url = reverse('endorse_skill', kwargs={'skill_id': str(self.skill_id)})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.json(), {'error': 'Invalid request method.'})
+
+    def test_endorse_skill_invalid_json(self):
+        url = reverse('endorse_skill', kwargs={'skill_id': str(self.skill_id)})
+        response = self.client.post(url, 'invalid json data', content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {'error': 'Invalid JSON payload.'})
+
+    def test_endorse_skill_missing_name(self):
+        url = reverse('endorse_skill', kwargs={'skill_id': str(self.skill_id)})
+        payload = {'name': '', 'comment': 'Good stuff'}
+        response = self.client.post(url, json.dumps(payload), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {'error': 'Name is required.'})
+
+    def test_endorse_skill_name_too_long(self):
+        url = reverse('endorse_skill', kwargs={'skill_id': str(self.skill_id)})
+        payload = {'name': 'a' * 51, 'comment': 'Good stuff'}
+        response = self.client.post(url, json.dumps(payload), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {'error': 'Name must be 50 characters or less.'})
+
+    def test_endorse_skill_comment_too_long(self):
+        url = reverse('endorse_skill', kwargs={'skill_id': str(self.skill_id)})
+        payload = {'name': 'Bob', 'comment': 'a' * 201}
+        response = self.client.post(url, json.dumps(payload), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {'error': 'Comment must be 200 characters or less.'})
+
+    def test_endorse_skill_profanity_detected(self):
+        url = reverse('endorse_skill', kwargs={'skill_id': str(self.skill_id)})
+        payload = {'name': 'Bob', 'comment': 'bad word comment'}
+        with patch('better_profanity.profanity.contains_profanity', return_value=True):
+            response = self.client.post(url, json.dumps(payload), content_type='application/json')
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.json(), {'error': 'Inappropriate content detected.'})
+
+    def test_endorse_skill_not_found(self):
+        non_existent_id = str(ObjectId())
+        url = reverse('endorse_skill', kwargs={'skill_id': non_existent_id})
+        payload = {'name': 'Bob', 'comment': 'Great job'}
+        response = self.client.post(url, json.dumps(payload), content_type='application/json')
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {'error': 'Skill not found.'})
+
+    def test_endorse_skill_success(self):
+        url = reverse('endorse_skill', kwargs={'skill_id': str(self.skill_id)})
+        payload = {'name': 'Bob', 'comment': 'Fantastic Django skills!'}
+        response = self.client.post(url, json.dumps(payload), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        
+        data = response.json()
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['endorsements'], 6)
+        self.assertEqual(data['endorser']['name'], 'Bob')
+        self.assertEqual(data['endorser']['comment'], 'Fantastic Django skills!')
+        self.assertIsNotNone(data['endorser']['created_at'])
+        
+        # Verify db document update
+        skill = self.mock_db.skills.find_one({'_id': self.skill_id})
+        self.assertEqual(skill['endorsements'], 6)
+        self.assertEqual(len(skill['endorsers']), 2)
+        self.assertEqual(skill['endorsers'][1]['name'], 'Bob')
+        self.assertEqual(skill['endorsers'][1]['comment'], 'Fantastic Django skills!')
+
+    def test_endorse_skill_rate_limiting_enforced(self):
+        url = reverse('endorse_skill', kwargs={'skill_id': str(self.skill_id)})
+        payload = {'name': 'Bob', 'comment': 'First time'}
+        
+        # First request: should pass
+        response1 = self.client.post(url, json.dumps(payload), content_type='application/json')
+        self.assertEqual(response1.status_code, 200)
+        
+        # Second request from same IP: should fail with 429
+        response2 = self.client.post(url, json.dumps(payload), content_type='application/json')
+        self.assertEqual(response2.status_code, 429)
+        self.assertEqual(response2.json(), {'error': 'You have already endorsed this skill recently. Please try again tomorrow.'})
+
+    def test_homepage_renders_skills_with_endorsements_json(self):
+        response = self.client.get(reverse('index'))
+        self.assertEqual(response.status_code, 200)
+        grouped_skills = response.context['grouped_skills']
+        self.assertIn('Languages', grouped_skills)
+        skill = grouped_skills['Languages'][0]
+        self.assertEqual(skill['endorsements'], 5)
+        
+        # Decode and check serialization
+        endorsers = json.loads(skill['endorsers_json'])
+        self.assertEqual(len(endorsers), 1)
+        self.assertEqual(endorsers[0]['name'], 'Alice')
+        self.assertEqual(endorsers[0]['comment'], 'Great coder!')
+        self.assertEqual(endorsers[0]['created_at'], 'May 24, 2026')
+
