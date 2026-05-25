@@ -1127,3 +1127,25 @@ class TinyMceUploadTests(AdminBaseViewTestCase):
         response = self.client.post(reverse('admin_upload_image'), {'file': dummy_file})
         self.assertEqual(response.status_code, 500)
         self.assertEqual(response.json(), {'error': 'Cloudinary Error'})
+
+from django.test import override_settings
+
+@override_settings(DEBUG=False)
+class ErrorPageTests(SimpleTestCase):
+    def test_custom_404_page(self):
+        response = self.client.get('/this-path-does-not-exist/')
+        self.assertEqual(response.status_code, 404)
+        self.assertTemplateUsed(response, '404.html')
+        self.assertContains(response, '404', status_code=404)
+        self.assertContains(response, 'Page Not Found', status_code=404)
+
+    def test_custom_500_page(self):
+        from main.views import handler500
+        from django.test import RequestFactory
+        factory = RequestFactory()
+        request = factory.get('/')
+        response = handler500(request)
+        self.assertEqual(response.status_code, 500)
+        # 500 error page should contain 500 and Internal Server Error
+        self.assertContains(response, '500', status_code=500)
+        self.assertContains(response, 'Internal Server Error', status_code=500)

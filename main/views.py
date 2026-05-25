@@ -412,3 +412,9 @@ def robots_txt_view(request):
         f"Sitemap: {base_url}/sitemap.xml\n"
     )
     return HttpResponse(content, content_type='text/plain')
+
+def handler404(request, exception=None):
+    return render(request, '404.html', status=404)
+
+def handler500(request):
+    return render(request, '500.html', status=500)

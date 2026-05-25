@@ -1,0 +1,125 @@
+{% extends 'main/base.html' %}
+{% block title %}404 - Page Not Found{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-glass-card">
+        <div class="error-glow"></div>
+        <div class="error-icon">
+            <i class="fa-solid fa-circle-exclamation"></i>
+        </div>
+        <h1 class="error-code highlight">404</h1>
+        <h2 class="error-title">Page Not Found</h2>
+        <p class="error-message">Oops! The page you are looking for has taken a detour into gravity-free space or never existed in the first place.</p>
+        <div class="error-actions">
+            <a href="/" class="btn btn-primary"><i class="fa-solid fa-house"></i> Go Back Home</a>
+            <a href="{% url 'blog_index' %}" class="btn btn-outline"><i class="fa-solid fa-book"></i> Read Blogs</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-container {
+    min-height: 75vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.error-glass-card {
+    position: relative;
+    max-width: 550px;
+    width: 100%;
+    padding: 3rem 2rem;
+    background: rgba(26, 26, 46, 0.4);
+    border: 1px solid rgba(108, 99, 255, 0.2);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    z-index: 5;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+/* Light mode support */
+:root.light-mode .error-glass-card {
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(108, 99, 255, 0.15);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+}
+
+.error-glow {
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 150px;
+    background: rgba(108, 99, 255, 0.15);
+    filter: blur(50px);
+    border-radius: 50%;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.error-icon {
+    font-size: 4rem;
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    animation: float 4s ease-in-out infinite;
+}
+
+.error-code {
+    font-size: 6rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+    letter-spacing: -2px;
+}
+
+.error-title {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.error-message {
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+}
+
+.error-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.error-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+{% endblock %}
