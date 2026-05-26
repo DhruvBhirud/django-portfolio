@@ -138,9 +138,37 @@ class MockCollection:
                             match = False
                             break
                     else:
-                        if doc.get(k) != v:
-                            match = False
-                            break
+                        if isinstance(v, dict):
+                            val = doc.get(k)
+                            op_match = True
+                            for op, op_val in v.items():
+                                if op == '$gte':
+                                    if not (val is not None and val >= op_val):
+                                        op_match = False
+                                        break
+                                elif op == '$gt':
+                                    if not (val is not None and val > op_val):
+                                        op_match = False
+                                        break
+                                elif op == '$lte':
+                                    if not (val is not None and val <= op_val):
+                                        op_match = False
+                                        break
+                                elif op == '$lt':
+                                    if not (val is not None and val < op_val):
+                                        op_match = False
+                                        break
+                                elif op == '$ne':
+                                    if val == op_val:
+                                        op_match = False
+                                        break
+                            if not op_match:
+                                match = False
+                                break
+                        else:
+                            if doc.get(k) != v:
+                                match = False
+                                break
             if match:
                 filtered_docs.append(doc)
 
@@ -276,6 +304,7 @@ class MockDB:
         self.profile = MockCollection('profile', self)
         self.settings = MockCollection('settings', self)
         self.messages = MockCollection('messages', self)
+        self.page_views = MockCollection('page_views', self)
 
     def __getitem__(self, name):
         return getattr(self, name)
@@ -1438,3 +1467,80 @@ class AdminEndorsementModerationTests(AdminBaseViewTestCase):
         self.assertEqual(len(skill['endorsers']), 1)
         self.assertNotIn(self.approved_id, [e['id'] for e in skill['endorsers']])
 
+
+# ======================================================================
+# --- Page View Tracking and Dashboard Visualization Tests ---
+# ======================================================================
+
+class PageViewTrackingTests(BaseViewTestCase):
+    def test_record_page_view_records_in_db(self):
+        from main.views import record_page_view
+        self.assertEqual(len(self.mock_db.page_views.documents), 0)
+        
+        record_page_view('homepage', item_title='Homepage')
+        self.assertEqual(len(self.mock_db.page_views.documents), 1)
+        
+        view = self.mock_db.page_views.documents[0]
+        self.assertEqual(view['type'], 'homepage')
+        self.assertEqual(view['item_title'], 'Homepage')
+        self.assertIsNotNone(view['timestamp'])
+
+    def test_homepage_records_page_view(self):
+        self.assertEqual(len(self.mock_db.page_views.documents), 0)
+        response = self.client.get(reverse('index'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(self.mock_db.page_views.documents), 1)
+        self.assertEqual(self.mock_db.page_views.documents[0]['type'], 'homepage')
+
+    def test_project_detail_records_page_view(self):
+        self.assertEqual(len(self.mock_db.page_views.documents), 0)
+        response = self.client.get(reverse('project_detail', kwargs={'project_slug': 'portfolio-website'}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(self.mock_db.page_views.documents), 1)
+        self.assertEqual(self.mock_db.page_views.documents[0]['type'], 'project')
+        self.assertEqual(self.mock_db.page_views.documents[0]['item_title'], 'Portfolio Website')
+
+    def test_blog_detail_records_page_view(self):
+        self.assertEqual(len(self.mock_db.page_views.documents), 0)
+        response = self.client.get(reverse('blog_detail', kwargs={'blog_slug': 'intro-to-django'}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(self.mock_db.page_views.documents), 1)
+        self.assertEqual(self.mock_db.page_views.documents[0]['type'], 'blog')
+        self.assertEqual(self.mock_db.page_views.documents[0]['item_title'], 'Intro to Django')
+
+
+class AdminDashboardPageViewsTests(AdminBaseViewTestCase):
+    def test_dashboard_aggregates_views_and_renders(self):
+        # Seed page views over different days in the last 30 days
+        from datetime import timedelta
+        now = datetime.now()
+        
+        self.mock_db.page_views.documents = [
+            {'_id': ObjectId(), 'type': 'homepage', 'timestamp': now - timedelta(days=2), 'item_title': 'Homepage'},
+            {'_id': ObjectId(), 'type': 'project', 'timestamp': now - timedelta(days=2), 'item_title': 'Portfolio Website'},
+            {'_id': ObjectId(), 'type': 'blog', 'timestamp': now - timedelta(days=1), 'item_title': 'Intro to Django'},
+            {'_id': ObjectId(), 'type': 'homepage', 'timestamp': now, 'item_title': 'Homepage'},
+        ]
+        
+        response = self.client.get(reverse('admin_dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'main/admin/dashboard.html')
+        
+        # Verify view statistics are passed to context
+        self.assertIn('chart_data_json', response.context)
+        self.assertIn('recent_views', response.context)
+        
+        recent_views = response.context['recent_views']
+        self.assertEqual(len(recent_views), 4)
+        self.assertEqual(recent_views[0]['type'], 'homepage')
+        
+        # Parse JSON chart data
+        chart_data = json.loads(response.context['chart_data_json'])
+        self.assertEqual(len(chart_data['dates']), 30)
+        
+        # Total views on today should be 1
+        self.assertEqual(chart_data['total'][-1], 1)
+        # Total views on yesterday should be 1
+        self.assertEqual(chart_data['total'][-2], 1)
+        # Total views 2 days ago should be 2
+        self.assertEqual(chart_data['total'][-3], 2)

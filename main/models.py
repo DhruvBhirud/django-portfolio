@@ -64,3 +64,17 @@ class Blog(models.Model):
     class Meta:
         managed = False
 
+
+class PageView(models.Model):
+    """
+    Maps to the 'page_views' collection.
+    Records individual page view events with timestamps for analytics.
+    """
+    type = models.CharField(max_length=50)  # 'homepage', 'project', 'blog'
+    item_id = models.CharField(max_length=50, blank=True, null=True)  # string representing ObjectId if project/blog
+    item_title = models.CharField(max_length=200, blank=True, null=True)  # e.g., 'E-Commerce Platform' or 'Intro to Django'
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        managed = False
+

@@ -3,7 +3,8 @@ from django.urls import reverse
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from datetime import datetime
+from datetime import datetime, timedelta
+import json
 from functools import wraps
 from bson import ObjectId
 from .db import get_db
@@ -95,6 +96,65 @@ def dashboard(request):
         p['id'] = str(p['_id'])
         p['views'] = p.get('views', 0)
         
+    # --- Page View Analytics Processing ---
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=29)
+    start_day_midnight = datetime(start_date.year, start_date.month, start_date.day, 0, 0, 0)
+    
+    # Fetch page views for the last 30 days
+    views_cursor = list(db.page_views.find({
+        'timestamp': {'$gte': start_day_midnight}
+    }))
+    
+    # Initialize daily stats
+    daily_stats = {}
+    temp_date = start_date
+    while temp_date <= end_date:
+        date_str = temp_date.strftime('%Y-%m-%d')
+        daily_stats[date_str] = {'homepage': 0, 'project': 0, 'blog': 0, 'total': 0}
+        temp_date += timedelta(days=1)
+        
+    # Aggregate counts
+    for pv in views_cursor:
+        ts = pv.get('timestamp')
+        if ts:
+            if isinstance(ts, str):
+                try:
+                    ts = datetime.fromisoformat(ts)
+                except ValueError:
+                    continue
+            date_str = ts.strftime('%Y-%m-%d')
+            if date_str in daily_stats:
+                pv_type = pv.get('type', 'homepage')
+                if pv_type in ['homepage', 'project', 'blog']:
+                    daily_stats[date_str][pv_type] += 1
+                daily_stats[date_str]['total'] += 1
+                
+    chart_dates = sorted(daily_stats.keys())
+    chart_homepage = [daily_stats[d]['homepage'] for d in chart_dates]
+    chart_project = [daily_stats[d]['project'] for d in chart_dates]
+    chart_blog = [daily_stats[d]['blog'] for d in chart_dates]
+    chart_total = [daily_stats[d]['total'] for d in chart_dates]
+    
+    chart_data = {
+        'dates': chart_dates,
+        'homepage': chart_homepage,
+        'project': chart_project,
+        'blog': chart_blog,
+        'total': chart_total,
+    }
+    chart_data_json = json.dumps(chart_data)
+    
+    # Fetch 10 most recent views
+    recent_views = list(db.page_views.find().sort('timestamp', -1).limit(10))
+    for rv in recent_views:
+        rv['id'] = str(rv['_id'])
+        ts = rv.get('timestamp')
+        if isinstance(ts, datetime):
+            rv['formatted_time'] = ts.strftime('%b %d, %Y %H:%M:%S')
+        else:
+            rv['formatted_time'] = str(ts)
+        
     return render(request, 'main/admin/dashboard.html', {
         'project_count': project_count,
         'blog_count': blog_count,
@@ -108,6 +168,8 @@ def dashboard(request):
         'recent_projects': recent_projects,
         'popular_blogs': popular_blogs,
         'popular_projects': popular_projects,
+        'chart_data_json': chart_data_json,
+        'recent_views': recent_views,
     })
 
 @admin_required

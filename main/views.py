@@ -19,6 +19,23 @@ def calculate_read_time(content_html):
     read_time = (word_count + 199) // 200  # Round up division
     return max(1, read_time)
 
+def record_page_view(view_type, item_id=None, item_title=None):
+    """Inserts a page view event with timestamp to MongoDB."""
+    try:
+        db = get_db()
+        if item_id:
+            item_id = str(item_id)
+        
+        view_doc = {
+            'type': view_type,
+            'item_id': item_id,
+            'item_title': item_title,
+            'timestamp': datetime.now()
+        }
+        db.page_views.insert_one(view_doc)
+    except Exception as e:
+        print(f"Error recording page view: {e}")
+
 def index(request):
     db = get_db()
     # Sort by featured projects first, then by display order
@@ -58,6 +75,7 @@ def index(request):
     
     # Increment profile (homepage) view count
     db.profile.update_one({}, {'$inc': {'views': 1}}, upsert=True)
+    record_page_view('homepage', item_title='Homepage')
     
     # Get profile
     profile = db.profile.find_one() or {}
@@ -115,6 +133,7 @@ def project_detail(request, project_slug):
     project = db.projects.find_one({'slug': project_slug})
     if project:
         project['id'] = str(project['_id'])
+        record_page_view('project', item_id=project['id'], item_title=project.get('title'))
     return render(request, 'main/project_detail.html', {'project': project})
 
 def blog_index(request):
@@ -203,6 +222,7 @@ def blog_detail(request, blog_slug):
         blog['read_time'] = calculate_read_time(blog.get('content', ''))
         raw_tags = blog.get('tags', '')
         blog['tag_list'] = [t.strip() for t in raw_tags.split(',') if t.strip()] if raw_tags else []
+        record_page_view('blog', item_id=blog['id'], item_title=blog.get('title'))
     return render(request, 'main/blog_detail.html', {'blog': blog})
 
 def send_admin_notification(message_data):
