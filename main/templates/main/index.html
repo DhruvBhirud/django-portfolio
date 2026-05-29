@@ -251,7 +251,7 @@
     <h3 style="margin-top: 30px; margin-bottom: 15px; text-transform: uppercase; font-size: 1.1rem; color: #7f8c8d; letter-spacing: 1px;">{{ category }}</h3>
     <div class="skills-grid">
         {% for skill in skills %}
-        <div class="skill-badge clickable-skill" data-id="{{ skill.id }}" data-name="{{ skill.name }}" data-endorsers="{{ skill.endorsers_json }}" onclick="openEndorsementsModal(this)" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.3s; user-select: none; border-radius: 8px; border: 1px solid var(--border-card);">
+        <div class="skill-badge clickable-skill" data-id="{{ skill.id }}" data-name="{{ skill.name }}" data-image="{{ skill.image_url|default:'' }}" data-icon="{{ skill.icon_class|default:'' }}" data-endorsers="{{ skill.endorsers_json }}" onclick="openEndorsementsModal(this)" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.3s; user-select: none; border-radius: 8px; border: 1px solid var(--border-card);">
             <div style="display: flex; align-items: center;">
                 {% if skill.image_url %}
                 <img src="{{ skill.image_url }}" alt="{{ skill.name }} icon" style="height: 1.2em; width: auto; max-width: 2em; margin-right: 8px; object-fit: contain;">
@@ -378,7 +378,7 @@
         
         <!-- Header -->
         <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-            <h3 id="modal-skill-title" style="margin: 0; font-size: 1.3rem; font-weight: 700; color: var(--primary);">Skill Name</h3>
+            <h3 id="modal-skill-title" style="margin: 0; font-size: 1.3rem; font-weight: 700; color: var(--primary); display: flex; align-items: center;">Skill Name</h3>
             <button onclick="closeEndorsementsModal()" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; transition: color 0.3s;"><i class="fas fa-times"></i></button>
         </div>
         
@@ -451,6 +451,8 @@
         currentActiveBadge = badgeEl;
         const skillId = badgeEl.getAttribute('data-id');
         const skillName = badgeEl.getAttribute('data-name');
+        const skillImage = badgeEl.getAttribute('data-image');
+        const skillIcon = badgeEl.getAttribute('data-icon');
         const endorsersRaw = badgeEl.getAttribute('data-endorsers');
         
         let endorsers = [];
@@ -460,7 +462,14 @@
             console.error("Failed to parse endorsers JSON", e);
         }
         
-        document.getElementById('modal-skill-title').textContent = skillName;
+        let titleHtml = '';
+        if (skillImage) {
+            titleHtml = `<img src="${skillImage}" alt="${skillName} icon" style="height: 1.2em; width: auto; max-width: 2em; margin-right: 8px; object-fit: contain;">`;
+        } else if (skillIcon) {
+            titleHtml = `<i class="${skillIcon}" style="margin-right: 8px; font-size: 1.2em;"></i>`;
+        }
+        
+        document.getElementById('modal-skill-title').innerHTML = `${titleHtml}<span>${skillName}</span>`;
         document.getElementById('endorse-skill-id').value = skillId;
         document.getElementById('modal-endorsement-count').textContent = endorsers.length;
         
