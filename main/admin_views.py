@@ -662,3 +662,68 @@ def delete_endorse_skill(request, skill_id, endorsement_id):
                     }
                 )
     return redirect('admin_endorsements')
+
+@admin_required
+def manage_theme(request):
+    db = get_db()
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'save':
+            theme_data = {
+                'primary': request.POST.get('primary'),
+                'bg_main': request.POST.get('bg_main'),
+                'bg_alt': request.POST.get('bg_alt'),
+                'bg_card': request.POST.get('bg_card'),
+                'text_main': request.POST.get('text_main'),
+                'text_muted': request.POST.get('text_muted'),
+                'bg_nav': request.POST.get('bg_nav'),
+                'border_color': request.POST.get('border_color'),
+                'border_card': request.POST.get('border_card'),
+                
+                'light_bg_main': request.POST.get('light_bg_main'),
+                'light_bg_alt': request.POST.get('light_bg_alt'),
+                'light_bg_card': request.POST.get('light_bg_card'),
+                'light_text_main': request.POST.get('light_text_main'),
+                'light_text_muted': request.POST.get('light_text_muted'),
+                'light_bg_nav': request.POST.get('light_bg_nav'),
+                'light_border_color': request.POST.get('light_border_color'),
+                'light_border_card': request.POST.get('light_border_card'),
+            }
+            # Add or update theme document
+            db.theme.update_one({}, {'$set': theme_data}, upsert=True)
+        elif action == 'reset':
+            # Delete theme document to revert to default CSS
+            db.theme.delete_many({})
+        return redirect('admin_theme')
+        
+    theme = db.theme.find_one() or {}
+    
+    # Default values based on current style.css
+    defaults = {
+        'primary': '#6c63ff',
+        'bg_main': '#0a0a0a',
+        'bg_alt': '#111111',
+        'bg_card': '#1a1a2e',
+        'text_main': '#e0e0e0',
+        'text_muted': '#888888',
+        'bg_nav': 'rgba(10, 10, 10, 0.95)',
+        'border_color': '#222222',
+        'border_card': '#2a2a4a',
+        
+        'light_bg_main': '#f8f9fa',
+        'light_bg_alt': '#e9ecef',
+        'light_bg_card': '#ffffff',
+        'light_text_main': '#212529',
+        'light_text_muted': '#6c757d',
+        'light_bg_nav': 'rgba(255, 255, 255, 0.95)',
+        'light_border_color': '#dee2e6',
+        'light_border_card': '#e5e7eb',
+    }
+    
+    # If a value is missing in db, fallback to default for template rendering
+    for k, v in defaults.items():
+        if k not in theme:
+            theme[k] = v
+            
+    return render(request, 'main/admin/manage_theme.html', {'theme': theme})

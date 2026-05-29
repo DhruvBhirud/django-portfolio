@@ -26,4 +26,5 @@ urlpatterns = [
     path('endorsements/', admin_views.list_endorsements, name='admin_endorsements'),
     path('endorsements/approve/<str:skill_id>/<str:endorsement_id>/', admin_views.approve_endorse_skill, name='admin_endorse_approve'),
     path('endorsements/delete/<str:skill_id>/<str:endorsement_id>/', admin_views.delete_endorse_skill, name='admin_endorse_delete'),
+    path('theme/', admin_views.manage_theme, name='admin_theme'),
 ]

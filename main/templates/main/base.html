@@ -8,6 +8,31 @@
     <link rel="icon" type="image/png" href="{% static 'images/favicon-light.png' %}" media="(prefers-color-scheme: light)">
     <link rel="icon" type="image/png" href="{% static 'images/favicon-dark.png' %}" media="(prefers-color-scheme: dark)">
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=1.1">
+    {% if custom_theme %}
+    <style>
+        :root {
+            --primary: {{ custom_theme.primary }};
+            --bg-main: {{ custom_theme.bg_main }};
+            --bg-alt: {{ custom_theme.bg_alt }};
+            --bg-card: {{ custom_theme.bg_card }};
+            --text-main: {{ custom_theme.text_main }};
+            --text-muted: {{ custom_theme.text_muted }};
+            --bg-nav: {{ custom_theme.bg_nav }};
+            --border-color: {{ custom_theme.border_color }};
+            --border-card: {{ custom_theme.border_card }};
+        }
+        :root.light-mode {
+            --bg-main: {{ custom_theme.light_bg_main }};
+            --bg-alt: {{ custom_theme.light_bg_alt }};
+            --bg-card: {{ custom_theme.light_bg_card }};
+            --text-main: {{ custom_theme.light_text_main }};
+            --text-muted: {{ custom_theme.light_text_muted }};
+            --bg-nav: {{ custom_theme.light_bg_nav }};
+            --border-color: {{ custom_theme.light_border_color }};
+            --border-card: {{ custom_theme.light_border_card }};
+        }
+    </style>
+    {% endif %}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
     

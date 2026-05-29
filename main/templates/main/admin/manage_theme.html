@@ -1,0 +1,121 @@
+{% extends 'main/admin/base_admin.html' %}
+
+{% block content %}
+<div class="header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2>Manage Theme</h2>
+    <div>
+        <form method="POST" style="display: inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="reset">
+            <button type="submit" class="btn-danger" onclick="return confirm('Are you sure you want to reset the theme to defaults?');">Reset to Default</button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="save">
+        
+        <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+            <div style="flex: 1; min-width: 300px;">
+                <h3 style="color: #3498db; margin-bottom: 15px;">Dark Mode & Global Colors</h3>
+                
+                <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <label for="primary" style="font-weight: bold; width: 50%;">Primary Color:</label>
+                    <input type="color" id="primary" name="primary" value="{{ theme.primary }}" style="width: 100px; height: 40px; padding: 0;">
+                </div>
+                
+                <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <label for="bg_main" style="font-weight: bold; width: 50%;">Main Background:</label>
+                    <input type="color" id="bg_main" name="bg_main" value="{{ theme.bg_main }}" style="width: 100px; height: 40px; padding: 0;">
+                </div>
+                
+                <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <label for="bg_alt" style="font-weight: bold; width: 50%;">Alternate Background:</label>
+                    <input type="color" id="bg_alt" name="bg_alt" value="{{ theme.bg_alt }}" style="width: 100px; height: 40px; padding: 0;">
+                </div>
+                
+                <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <label for="bg_card" style="font-weight: bold; width: 50%;">Card Background:</label>
+                    <input type="color" id="bg_card" name="bg_card" value="{{ theme.bg_card }}" style="width: 100px; height: 40px; padding: 0;">
+                </div>
+                
+                <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <label for="text_main" style="font-weight: bold; width: 50%;">Main Text Color:</label>
+                    <input type="color" id="text_main" name="text_main" value="{{ theme.text_main }}" style="width: 100px; height: 40px; padding: 0;">
+                </div>
+                
+                <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <label for="text_muted" style="font-weight: bold; width: 50%;">Muted Text Color:</label>
+                    <input type="color" id="text_muted" name="text_muted" value="{{ theme.text_muted }}" style="width: 100px; height: 40px; padding: 0;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label for="bg_nav" style="font-weight: bold; display: block; margin-bottom: 5px;">Nav Background (RGBA/Hex):</label>
+                    <input type="text" id="bg_nav" name="bg_nav" value="{{ theme.bg_nav }}" placeholder="rgba(10, 10, 10, 0.95)" required>
+                    <small style="color: #7f8c8d;">Must support transparency (e.g. rgba(10, 10, 10, 0.95) or hex #0a0a0af2)</small>
+                </div>
+                
+                <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <label for="border_color" style="font-weight: bold; width: 50%;">Main Border Color:</label>
+                    <input type="color" id="border_color" name="border_color" value="{{ theme.border_color }}" style="width: 100px; height: 40px; padding: 0;">
+                </div>
+                
+                <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <label for="border_card" style="font-weight: bold; width: 50%;">Card Border Color:</label>
+                    <input type="color" id="border_card" name="border_card" value="{{ theme.border_card }}" style="width: 100px; height: 40px; padding: 0;">
+                </div>
+            </div>
+            
+            <div style="flex: 1; min-width: 300px;">
+                <h3 style="color: #e67e22; margin-bottom: 15px;">Light Mode Colors</h3>
+                
+                <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <label for="light_bg_main" style="font-weight: bold; width: 50%;">Main Background:</label>
+                    <input type="color" id="light_bg_main" name="light_bg_main" value="{{ theme.light_bg_main }}" style="width: 100px; height: 40px; padding: 0;">
+                </div>
+                
+                <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <label for="light_bg_alt" style="font-weight: bold; width: 50%;">Alternate Background:</label>
+                    <input type="color" id="light_bg_alt" name="light_bg_alt" value="{{ theme.light_bg_alt }}" style="width: 100px; height: 40px; padding: 0;">
+                </div>
+                
+                <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <label for="light_bg_card" style="font-weight: bold; width: 50%;">Card Background:</label>
+                    <input type="color" id="light_bg_card" name="light_bg_card" value="{{ theme.light_bg_card }}" style="width: 100px; height: 40px; padding: 0;">
+                </div>
+                
+                <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <label for="light_text_main" style="font-weight: bold; width: 50%;">Main Text Color:</label>
+                    <input type="color" id="light_text_main" name="light_text_main" value="{{ theme.light_text_main }}" style="width: 100px; height: 40px; padding: 0;">
+                </div>
+                
+                <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <label for="light_text_muted" style="font-weight: bold; width: 50%;">Muted Text Color:</label>
+                    <input type="color" id="light_text_muted" name="light_text_muted" value="{{ theme.light_text_muted }}" style="width: 100px; height: 40px; padding: 0;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label for="light_bg_nav" style="font-weight: bold; display: block; margin-bottom: 5px;">Nav Background (RGBA/Hex):</label>
+                    <input type="text" id="light_bg_nav" name="light_bg_nav" value="{{ theme.light_bg_nav }}" placeholder="rgba(255, 255, 255, 0.95)" required>
+                </div>
+                
+                <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <label for="light_border_color" style="font-weight: bold; width: 50%;">Main Border Color:</label>
+                    <input type="color" id="light_border_color" name="light_border_color" value="{{ theme.light_border_color }}" style="width: 100px; height: 40px; padding: 0;">
+                </div>
+                
+                <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <label for="light_border_card" style="font-weight: bold; width: 50%;">Card Border Color:</label>
+                    <input type="color" id="light_border_card" name="light_border_card" value="{{ theme.light_border_card }}" style="width: 100px; height: 40px; padding: 0;">
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <button type="submit" style="background: #2ecc71; font-size: 1.1rem;"><i class="fas fa-save"></i> Save Theme</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

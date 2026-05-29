@@ -80,6 +80,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'main.context_processors.pending_endorsements_count',
+                'main.context_processors.theme_context',
             ],
         },
     },

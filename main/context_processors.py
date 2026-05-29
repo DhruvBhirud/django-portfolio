@@ -13,3 +13,15 @@ def pending_endorsements_count(request):
         except Exception:
             return {'pending_endorsements_count': 0}
     return {'pending_endorsements_count': 0}
+
+def theme_context(request):
+    try:
+        db = get_db()
+        theme = db.theme.find_one()
+        if theme:
+            # Convert ObjectId to string or simply drop it to avoid serialization issues
+            theme.pop('_id', None)
+            return {'custom_theme': theme}
+    except Exception:
+        pass
+    return {}
