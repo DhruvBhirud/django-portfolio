@@ -8,7 +8,7 @@
             <input type="text" name="name" value="{{ skill.name|default:'' }}" required>
 
             <label>Category (e.g. Frontend, Backend):</label>
-            <input list="category-list" name="category" value="{{ skill.category|default:'Other' }}" required>
+            <input type="text" list="category-list" name="category" value="{{ skill.category|default:'Other' }}" required>
             <datalist id="category-list">
                 <option value="Other">Other</option>
                 {% for cat in categories %}
@@ -17,7 +17,7 @@
             </datalist>
             
             <label>Devicon Class (optional):</label>
-            <input list="devicon-list" name="icon_class" value="{{ skill.icon_class|default:'' }}" placeholder="Search/Select Devicon...">
+            <input type="text" list="devicon-list" name="icon_class" value="{{ skill.icon_class|default:'' }}" placeholder="Search/Select Devicon...">
             <datalist id="devicon-list"></datalist>
             
             <label>Custom Image (optional):</label>
@@ -29,9 +29,10 @@
             {% endif %}
             <input type="file" name="custom_icon" accept="image/*">
             
-            <br><br>
-            <button type="submit">Save Changes</button>
-            <a href="{% url 'admin_skills' %}" style="margin-left: 10px;">Cancel</a>
+            <div style="margin-top: 20px;">
+                <button type="submit" class="btn"><i class="fas fa-save"></i> Save Changes</button>
+                <a href="{% url 'admin_skills' %}" class="btn btn-secondary">Cancel</a>
+            </div>
         </form>
     </div>
     

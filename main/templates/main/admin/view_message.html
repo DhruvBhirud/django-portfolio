@@ -2,8 +2,8 @@
 {% block content %}
 <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2>Message Details</h2>
-        <a href="{% url 'admin_messages' %}" style="text-decoration: none; color: #7f8c8d;">&larr; Back to Inbox</a>
+        <h2 style="margin: 0;">Message Details</h2>
+        <a href="{% url 'admin_messages' %}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;"><i class="fas fa-arrow-left"></i> Back to Inbox</a>
     </div>
     
     <div style="border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px;">
@@ -15,11 +15,11 @@
     <div style="background: #f9f9f9; padding: 20px; border-radius: 4px; line-height: 1.6; white-space: pre-wrap;">{{ message.message }}</div>
 
     <div style="margin-top: 30px; display: flex; gap: 15px;">
-        <a href="mailto:{{ message.email }}?subject=Re: {{ message.subject }}" class="button" style="text-decoration: none; display: inline-block; padding: 10px 20px; background: #3498db; color: white; border-radius: 4px;">Reply via Email</a>
+        <a href="mailto:{{ message.email }}?subject=Re: {{ message.subject }}" class="btn"><i class="fas fa-reply"></i> Reply via Email</a>
         
-        <form action="{% url 'admin_delete_message' message.id %}" method="POST" onsubmit="return confirm('Delete this message permanently?')">
+        <form action="{% url 'admin_delete_message' message.id %}" method="POST" style="margin: 0;" onsubmit="return confirm('Delete this message permanently?')">
             {% csrf_token %}
-            <button type="submit" class="btn-danger">Delete Message</button>
+            <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Delete Message</button>
         </form>
     </div>
 </div>

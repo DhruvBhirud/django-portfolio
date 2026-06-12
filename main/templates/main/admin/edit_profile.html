@@ -24,7 +24,7 @@
             
             <label>Resume (PDF format):</label>
             {% if profile.resume_url %}
-            <p style="margin: 0 0 10px 0; font-size: 14px;">Current Resume: <a href="{{ profile.resume_url }}" target="_blank">View PDF</a></p>
+            <p style="margin: 0 0 10px 0; font-size: 14px;">Current Resume: <a href="{{ profile.resume_url }}" target="_blank" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.8rem; display: inline-flex;"><i class="fas fa-external-link-alt"></i> View PDF</a></p>
             {% endif %}
             <input type="file" name="resume" accept=".pdf">
             
