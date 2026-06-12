@@ -1,0 +1,71 @@
+{% extends 'main/admin/base_admin.html' %}
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2>Manage Education</h2>
+    <a href="{% url 'admin_education_add' %}" class="btn"><i class="fas fa-plus"></i> Add Education</a>
+</div>
+
+<div class="card">
+    <table id="education-table">
+        <thead>
+            <tr>
+                <th style="width: 50px;"></th>
+                <th>Institution</th>
+                <th>Degree/Level</th>
+                <th>Period</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="sortable-body">
+            {% for edu in education_list %}
+            <tr data-id="{{ edu.id }}">
+                <td class="handle" style="cursor: grab; color: #bdc3c7; text-align: center;"><i class="fas fa-grip-vertical"></i></td>
+                <td>{{ edu.institution }}</td>
+                <td>{{ edu.degree }}</td>
+                <td>{{ edu.start_date }} - {% if edu.is_current %}Present{% else %}{{ edu.end_date }}{% endif %}</td>
+                <td>
+                    <a href="{% url 'admin_education_edit' edu.id %}" class="btn" style="padding: 5px 10px; margin-right: 5px;"><i class="fas fa-edit"></i> Edit</a>
+                    <form action="{% url 'admin_education_delete' edu.id %}" method="POST" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger" style="padding: 5px 10px;" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i> Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No education entries found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var el = document.getElementById('sortable-body');
+        var sortable = Sortable.create(el, {
+            handle: '.handle',
+            animation: 150,
+            onEnd: function () {
+                var order = [];
+                el.querySelectorAll('tr[data-id]').forEach(function(row) {
+                    order.push(row.getAttribute('data-id'));
+                });
+                
+                fetch('{% url "admin_education_reorder" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(order)
+                }).then(response => {
+                    if(!response.ok) {
+                        alert('Error saving order');
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

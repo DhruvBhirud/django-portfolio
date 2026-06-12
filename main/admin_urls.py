@@ -18,6 +18,19 @@ urlpatterns = [
     path('projects/add/', admin_views.edit_project, name='admin_project_add'),
     path('projects/edit/<str:project_id>/', admin_views.edit_project, name='admin_project_edit'),
     path('projects/delete/<str:project_id>/', admin_views.delete_project, name='admin_project_delete'),
+    
+    path('education/', admin_views.list_education, name='admin_education'),
+    path('education/reorder/', admin_views.reorder_education, name='admin_education_reorder'),
+    path('education/add/', admin_views.edit_education, name='admin_education_add'),
+    path('education/edit/<str:education_id>/', admin_views.edit_education, name='admin_education_edit'),
+    path('education/delete/<str:education_id>/', admin_views.delete_education, name='admin_education_delete'),
+
+    path('experience/', admin_views.list_experience, name='admin_experience'),
+    path('experience/reorder/', admin_views.reorder_experience, name='admin_experience_reorder'),
+    path('experience/add/', admin_views.edit_experience, name='admin_experience_add'),
+    path('experience/edit/<str:experience_id>/', admin_views.edit_experience, name='admin_experience_edit'),
+    path('experience/delete/<str:experience_id>/', admin_views.delete_experience, name='admin_experience_delete'),
+    
     path('upload-image/', admin_views.upload_image, name='admin_upload_image'),
     path('messages/', admin_views.list_messages, name='admin_messages'),
     path('messages/view/<str:message_id>/', admin_views.view_message, name='admin_view_message'),

@@ -78,3 +78,33 @@ class PageView(models.Model):
     class Meta:
         managed = False
 
+
+class Education(models.Model):
+    """Maps to the 'education' collection."""
+    institution = models.CharField(max_length=200)
+    institution_url = models.URLField(blank=True, null=True)
+    degree = models.CharField(max_length=200) # e.g. B.Tech, SSC, HSC
+    start_date = models.CharField(max_length=50) # Allow strings like 'Aug 2018'
+    end_date = models.CharField(max_length=50, blank=True, null=True)
+    is_current = models.BooleanField(default=False)
+    description = models.TextField(blank=True, null=True)
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        managed = False
+
+
+class Experience(models.Model):
+    """Maps to the 'experience' collection."""
+    company = models.CharField(max_length=200)
+    company_url = models.URLField(blank=True, null=True)
+    role = models.CharField(max_length=200)
+    start_date = models.CharField(max_length=50)
+    end_date = models.CharField(max_length=50, blank=True, null=True)
+    is_current = models.BooleanField(default=False)
+    description = models.TextField(blank=True, null=True)
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        managed = False
+

@@ -1,0 +1,65 @@
+{% extends 'main/admin/base_admin.html' %}
+{% block content %}
+<h2>{% if experience.id %}Edit Experience{% else %}Add Experience{% endif %}</h2>
+
+<div class="card" style="max-width: 800px;">
+    <form method="POST">
+        {% csrf_token %}
+        
+        <label>Company Name</label>
+        <input type="text" name="company" value="{{ experience.company }}" required>
+        
+        <label>Company URL (Optional)</label>
+        <input type="url" name="company_url" value="{{ experience.company_url|default:'' }}">
+        
+        <label>Role / Position</label>
+        <input type="text" name="role" value="{{ experience.role }}" required>
+        
+        <div style="display: flex; gap: 15px;">
+            <div style="flex: 1;">
+                <label>Start Date (e.g., Jun 2022)</label>
+                <input type="text" name="start_date" value="{{ experience.start_date }}" required>
+            </div>
+            <div style="flex: 1;">
+                <label>End Date (e.g., Present or Dec 2023)</label>
+                <input type="text" name="end_date" id="end_date" value="{{ experience.end_date|default:'' }}">
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="display: inline-flex; align-items: center; gap: 10px; cursor: pointer;">
+                <input type="checkbox" name="is_current" id="is_current" style="width: auto; margin: 0;" {% if experience.is_current %}checked{% endif %}>
+                Currently Working
+            </label>
+        </div>
+        
+        <label>Description (Optional)</label>
+        <textarea name="description" rows="4">{{ experience.description|default:'' }}</textarea>
+        
+        <div style="margin-top: 20px;">
+            <button type="submit" class="btn"><i class="fas fa-save"></i> Save Experience</button>
+            <a href="{% url 'admin_experience' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const isCurrentCheckbox = document.getElementById('is_current');
+        const endDateInput = document.getElementById('end_date');
+        
+        function toggleEndDate() {
+            if (isCurrentCheckbox.checked) {
+                endDateInput.disabled = true;
+                endDateInput.parentElement.style.opacity = '0.5';
+            } else {
+                endDateInput.disabled = false;
+                endDateInput.parentElement.style.opacity = '1';
+            }
+        }
+        
+        isCurrentCheckbox.addEventListener('change', toggleEndDate);
+        toggleEndDate(); // run on load
+    });
+</script>
+{% endblock %}

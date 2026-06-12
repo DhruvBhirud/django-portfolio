@@ -271,6 +271,82 @@
     {% endfor %}
 </section>
 
+<!-- Experience & Education -->
+<section class="section" id="timeline">
+    <h2 class="section-title">Experience &amp; Education</h2>
+    <div class="timeline-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 3rem; margin-top: 2rem;">
+        
+        <!-- Experience Column -->
+        <div class="timeline-column" style="display: flex; justify-content: center;">
+            <div style="width: 100%; max-width: 450px;">
+                <h3 style="margin-bottom: 2rem; font-size: 1.5rem; color: var(--primary); display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-briefcase"></i> Experience
+                </h3>
+                <div class="timeline-wrapper" style="border-left: 2px solid var(--border-color); padding-left: 20px;">
+                    {% for exp in experience_list %}
+                    <div class="timeline-item" style="position: relative; margin-bottom: 2.5rem;">
+                        <!-- Timeline Dot -->
+                        <div style="position: absolute; left: -27px; top: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--primary); border: 3px solid var(--bg-main);"></div>
+                        
+                        <div class="timeline-date" style="font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-bottom: 0.5rem; display: inline-block; background: rgba(108, 99, 255, 0.1); padding: 0.2rem 0.6rem; border-radius: 20px;">
+                            {{ exp.start_date }} - {% if exp.is_current %}Present{% else %}{{ exp.end_date }}{% endif %}
+                        </div>
+                        <h4 style="font-size: 1.2rem; margin: 0 0 0.3rem 0; color: var(--text-main);">{{ exp.role }}</h4>
+                        <h5 style="font-size: 1rem; margin: 0 0 1rem 0; color: var(--text-muted); font-weight: 500;">
+                            {% if exp.company_url %}
+                                <a href="{{ exp.company_url }}" target="_blank" style="color: inherit; text-decoration: underline; text-decoration-color: var(--border-color);">{{ exp.company }}</a>
+                            {% else %}
+                                {{ exp.company }}
+                            {% endif %}
+                        </h5>
+                        {% if exp.description %}
+                        <p style="font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; margin: 0;">{{ exp.description|linebreaksbr }}</p>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <p class="empty-msg" style="color: var(--text-muted);">Experience coming soon!</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Education Column -->
+        <div class="timeline-column" style="display: flex; justify-content: center;">
+            <div style="width: 100%; max-width: 450px;">
+                <h3 style="margin-bottom: 2rem; font-size: 1.5rem; color: var(--primary); display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-graduation-cap"></i> Education
+                </h3>
+                <div class="timeline-wrapper" style="border-left: 2px solid var(--border-color); padding-left: 20px;">
+                    {% for edu in education_list %}
+                    <div class="timeline-item" style="position: relative; margin-bottom: 2.5rem;">
+                        <!-- Timeline Dot -->
+                        <div style="position: absolute; left: -27px; top: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--primary); border: 3px solid var(--bg-main);"></div>
+                        
+                        <div class="timeline-date" style="font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-bottom: 0.5rem; display: inline-block; background: rgba(108, 99, 255, 0.1); padding: 0.2rem 0.6rem; border-radius: 20px;">
+                            {{ edu.start_date }} - {% if edu.is_current %}Present{% else %}{{ edu.end_date }}{% endif %}
+                        </div>
+                        <h4 style="font-size: 1.2rem; margin: 0 0 0.3rem 0; color: var(--text-main);">{{ edu.degree }}</h4>
+                        <h5 style="font-size: 1rem; margin: 0 0 1rem 0; color: var(--text-muted); font-weight: 500;">
+                            {% if edu.institution_url %}
+                                <a href="{{ edu.institution_url }}" target="_blank" style="color: inherit; text-decoration: underline; text-decoration-color: var(--border-color);">{{ edu.institution }}</a>
+                            {% else %}
+                                {{ edu.institution }}
+                            {% endif %}
+                        </h5>
+                        {% if edu.description %}
+                        <p style="font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; margin: 0;">{{ edu.description|linebreaksbr }}</p>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <p class="empty-msg" style="color: var(--text-muted);">Education coming soon!</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
 <!-- Blogs -->
 <section class="section" id="blogs">
     <h2 class="section-title">Recent Blogs</h2>

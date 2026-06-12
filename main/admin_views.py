@@ -436,6 +436,131 @@ def delete_project(request, project_id):
     return redirect('admin_projects')
 
 @admin_required
+def list_education(request):
+    db = get_db()
+    education_list = list(db.education.find().sort('order', 1))
+    for e in education_list:
+        e['id'] = str(e['_id'])
+    return render(request, 'main/admin/list_education.html', {'education_list': education_list})
+
+@admin_required
+def edit_education(request, education_id=None):
+    db = get_db()
+    education = {}
+    if education_id:
+        education = db.education.find_one({'_id': ObjectId(education_id)})
+        education['id'] = str(education['_id'])
+        
+    if request.method == 'POST':
+        education_data = {
+            'institution': request.POST.get('institution'),
+            'institution_url': request.POST.get('institution_url'),
+            'degree': request.POST.get('degree'),
+            'start_date': request.POST.get('start_date'),
+            'end_date': request.POST.get('end_date'),
+            'is_current': request.POST.get('is_current') == 'on',
+            'description': request.POST.get('description'),
+        }
+            
+        if education_id:
+            db.education.update_one({'_id': ObjectId(education_id)}, {'$set': education_data})
+        else:
+            max_doc = db.education.find_one(sort=[('order', -1)])
+            education_data['order'] = (max_doc.get('order', 0) + 1) if max_doc else 0
+            db.education.insert_one(education_data)
+            
+        return redirect('admin_education')
+        
+    return render(request, 'main/admin/edit_education.html', {'education': education})
+
+@admin_required
+def delete_education(request, education_id):
+    db = get_db()
+    if request.method == 'POST':
+        db.education.delete_one({'_id': ObjectId(education_id)})
+    return redirect('admin_education')
+
+@csrf_exempt
+@admin_required
+def reorder_education(request):
+    if request.method == 'POST':
+        try:
+            db = get_db()
+            data = json.loads(request.body)
+            for index, education_id in enumerate(data):
+                db.education.update_one(
+                    {'_id': ObjectId(education_id)},
+                    {'$set': {'order': index}}
+                )
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'invalid method'}, status=405)
+
+@admin_required
+def list_experience(request):
+    db = get_db()
+    experience_list = list(db.experience.find().sort('order', 1))
+    for e in experience_list:
+        e['id'] = str(e['_id'])
+    return render(request, 'main/admin/list_experience.html', {'experience_list': experience_list})
+
+@admin_required
+def edit_experience(request, experience_id=None):
+    db = get_db()
+    experience = {}
+    if experience_id:
+        experience = db.experience.find_one({'_id': ObjectId(experience_id)})
+        experience['id'] = str(experience['_id'])
+        
+    if request.method == 'POST':
+        experience_data = {
+            'company': request.POST.get('company'),
+            'company_url': request.POST.get('company_url'),
+            'role': request.POST.get('role'),
+            'start_date': request.POST.get('start_date'),
+            'end_date': request.POST.get('end_date'),
+            'is_current': request.POST.get('is_current') == 'on',
+            'description': request.POST.get('description'),
+        }
+            
+        if experience_id:
+            db.experience.update_one({'_id': ObjectId(experience_id)}, {'$set': experience_data})
+        else:
+            # Assign max order + 1 if new
+            max_doc = db.experience.find_one(sort=[('order', -1)])
+            experience_data['order'] = (max_doc.get('order', 0) + 1) if max_doc else 0
+            db.experience.insert_one(experience_data)
+            
+        return redirect('admin_experience')
+        
+    return render(request, 'main/admin/edit_experience.html', {'experience': experience})
+
+@admin_required
+def delete_experience(request, experience_id):
+    db = get_db()
+    if request.method == 'POST':
+        db.experience.delete_one({'_id': ObjectId(experience_id)})
+    return redirect('admin_experience')
+
+@csrf_exempt
+@admin_required
+def reorder_experience(request):
+    if request.method == 'POST':
+        try:
+            db = get_db()
+            data = json.loads(request.body)
+            for index, experience_id in enumerate(data):
+                db.experience.update_one(
+                    {'_id': ObjectId(experience_id)},
+                    {'$set': {'order': index}}
+                )
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'invalid method'}, status=405)
+
+@admin_required
 def list_messages(request):
     db = get_db()
     messages = list(db.messages.find().sort('created_at', -1))

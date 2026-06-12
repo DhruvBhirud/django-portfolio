@@ -110,11 +110,22 @@ def index(request):
     from django.conf import settings
     turnstile_site_key = general_settings.get('turnstile_site_key') or getattr(settings, 'TURNSTILE_SITE_KEY', '1x00000000000000000000AA')
     
+    # Fetch education and experience
+    education_list = list(db.education.find().sort('order', 1))
+    for e in education_list:
+        e['id'] = str(e['_id'])
+        
+    experience_list = list(db.experience.find().sort('order', 1))
+    for e in experience_list:
+        e['id'] = str(e['_id'])
+    
     context = {
         'projects': projects,
         'all_techs': sorted(list(all_techs)),
         'grouped_skills': grouped_skills,
         'blogs': blogs,
+        'education_list': education_list,
+        'experience_list': experience_list,
         'name': profile.get('name', 'Dhruv Bhirud'),
         'title': profile.get('title', 'Software Developer'),
         'bio': profile.get('bio', 'Passionate developer who loves building things.'),
