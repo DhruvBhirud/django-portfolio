@@ -18,6 +18,8 @@
         align-items: center;
         text-align: center;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+        text-decoration: none;
+        color: inherit;
     }
     .stat-card:hover {
         transform: translateY(-5px);
@@ -86,36 +88,36 @@
     
     <!-- Statistics Grid -->
     <div class="stats-grid">
-        <div class="stat-card">
+        <a href="{% url 'admin_projects' %}" class="stat-card">
             <div class="stat-icon"><i class="fas fa-project-diagram"></i></div>
             <div class="stat-value">{{ project_count }}</div>
             <div class="stat-label">Projects</div>
-        </div>
-        <div class="stat-card">
+        </a>
+        <a href="{% url 'admin_blogs' %}" class="stat-card">
             <div class="stat-icon"><i class="fas fa-blog"></i></div>
             <div class="stat-value">{{ blog_count }}</div>
             <div class="stat-label">Total Blogs</div>
-        </div>
-        <div class="stat-card">
+        </a>
+        <a href="{% url 'admin_blogs' %}" class="stat-card">
             <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
             <div class="stat-value">{{ published_blog_count }}</div>
             <div class="stat-label">Published Blogs</div>
-        </div>
-        <div class="stat-card">
+        </a>
+        <a href="{% url 'admin_skills' %}" class="stat-card">
             <div class="stat-icon"><i class="fas fa-laptop-code"></i></div>
             <div class="stat-value">{{ skill_count }}</div>
             <div class="stat-label">Skills tracked</div>
-        </div>
-        <div class="stat-card">
+        </a>
+        <a href="{% url 'admin_education' %}" class="stat-card">
             <div class="stat-icon"><i class="fas fa-graduation-cap"></i></div>
             <div class="stat-value">{{ education_count }}</div>
             <div class="stat-label">Education</div>
-        </div>
-        <div class="stat-card">
+        </a>
+        <a href="{% url 'admin_experience' %}" class="stat-card">
             <div class="stat-icon"><i class="fas fa-briefcase"></i></div>
             <div class="stat-value">{{ experience_count }}</div>
             <div class="stat-label">Experience</div>
-        </div>
+        </a>
     </div>
 
     <!-- Traffic/Views Statistics Grid -->
