@@ -3,7 +3,10 @@
 {% block content %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
     <h2>Manage Experience</h2>
-    <a href="{% url 'admin_experience_add' %}" class="btn"><i class="fas fa-plus"></i> Add Experience</a>
+    <div>
+        <a href="{% url 'admin_experience_sort_date' %}" class="btn btn-secondary" style="margin-right: 10px;"><i class="fas fa-sort-amount-down"></i> Sort by Date</a>
+        <a href="{% url 'admin_experience_add' %}" class="btn"><i class="fas fa-plus"></i> Add Experience</a>
+    </div>
 </div>
 
 <div class="card">

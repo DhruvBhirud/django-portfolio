@@ -21,12 +21,14 @@ urlpatterns = [
     
     path('education/', admin_views.list_education, name='admin_education'),
     path('education/reorder/', admin_views.reorder_education, name='admin_education_reorder'),
+    path('education/sort-by-date/', admin_views.sort_education_by_date, name='admin_education_sort_date'),
     path('education/add/', admin_views.edit_education, name='admin_education_add'),
     path('education/edit/<str:education_id>/', admin_views.edit_education, name='admin_education_edit'),
     path('education/delete/<str:education_id>/', admin_views.delete_education, name='admin_education_delete'),
 
     path('experience/', admin_views.list_experience, name='admin_experience'),
     path('experience/reorder/', admin_views.reorder_experience, name='admin_experience_reorder'),
+    path('experience/sort-by-date/', admin_views.sort_experience_by_date, name='admin_experience_sort_date'),
     path('experience/add/', admin_views.edit_experience, name='admin_experience_add'),
     path('experience/edit/<str:experience_id>/', admin_views.edit_experience, name='admin_experience_edit'),
     path('experience/delete/<str:experience_id>/', admin_views.delete_experience, name='admin_experience_delete'),

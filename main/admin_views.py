@@ -5,10 +5,33 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime, timedelta
 import json
+import re
 from functools import wraps
 from bson import ObjectId
 from .db import get_db
 import cloudinary.uploader
+
+def parse_fuzzy_date(date_str):
+    if not date_str:
+        return None
+    date_str = date_str.strip().lower()
+    if date_str in ('present', 'current', 'now'):
+        return datetime.now()
+    year_match = re.search(r'\b(19|20)\d{2}\b', date_str)
+    if not year_match:
+        return None
+    year = int(year_match.group())
+    months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+    month = 1
+    for i, m in enumerate(months):
+        if m in date_str:
+            month = i + 1
+            break
+    else:
+        mm_match = re.search(r'\b(0?[1-9]|1[0-2])[/-]\d{4}\b', date_str)
+        if mm_match:
+            month = int(re.split(r'[/-]', mm_match.group())[0])
+    return datetime(year, month, 1)
 
 def admin_required(view_func):
     @wraps(view_func)
@@ -448,6 +471,18 @@ def list_education(request):
     return render(request, 'main/admin/list_education.html', {'education_list': education_list})
 
 @admin_required
+def sort_education_by_date(request):
+    db = get_db()
+    # Sort by start_date_dt descending (newest first)
+    sorted_education = list(db.education.find().sort('start_date_dt', -1))
+    
+    # Re-assign order starting from 0
+    for idx, edu in enumerate(sorted_education):
+        db.education.update_one({'_id': edu['_id']}, {'$set': {'order': idx}})
+        
+    return redirect('admin_education')
+
+@admin_required
 def edit_education(request, education_id=None):
     db = get_db()
     education = {}
@@ -462,6 +497,8 @@ def edit_education(request, education_id=None):
             'degree': request.POST.get('degree'),
             'start_date': request.POST.get('start_date'),
             'end_date': request.POST.get('end_date'),
+            'start_date_dt': parse_fuzzy_date(request.POST.get('start_date')),
+            'end_date_dt': parse_fuzzy_date(request.POST.get('end_date')),
             'is_current': request.POST.get('is_current') == 'on',
             'description': request.POST.get('description'),
         }
@@ -469,8 +506,6 @@ def edit_education(request, education_id=None):
         if education_id:
             db.education.update_one({'_id': ObjectId(education_id)}, {'$set': education_data})
         else:
-            max_doc = db.education.find_one(sort=[('order', -1)])
-            education_data['order'] = (max_doc.get('order', 0) + 1) if max_doc else 0
             db.education.insert_one(education_data)
             
         return redirect('admin_education')
@@ -510,6 +545,18 @@ def list_experience(request):
     return render(request, 'main/admin/list_experience.html', {'experience_list': experience_list})
 
 @admin_required
+def sort_experience_by_date(request):
+    db = get_db()
+    # Sort by start_date_dt descending (newest first)
+    sorted_experience = list(db.experience.find().sort('start_date_dt', -1))
+    
+    # Re-assign order starting from 0
+    for idx, exp in enumerate(sorted_experience):
+        db.experience.update_one({'_id': exp['_id']}, {'$set': {'order': idx}})
+        
+    return redirect('admin_experience')
+
+@admin_required
 def edit_experience(request, experience_id=None):
     db = get_db()
     experience = {}
@@ -524,6 +571,8 @@ def edit_experience(request, experience_id=None):
             'role': request.POST.get('role'),
             'start_date': request.POST.get('start_date'),
             'end_date': request.POST.get('end_date'),
+            'start_date_dt': parse_fuzzy_date(request.POST.get('start_date')),
+            'end_date_dt': parse_fuzzy_date(request.POST.get('end_date')),
             'is_current': request.POST.get('is_current') == 'on',
             'description': request.POST.get('description'),
         }
@@ -531,9 +580,6 @@ def edit_experience(request, experience_id=None):
         if experience_id:
             db.experience.update_one({'_id': ObjectId(experience_id)}, {'$set': experience_data})
         else:
-            # Assign max order + 1 if new
-            max_doc = db.experience.find_one(sort=[('order', -1)])
-            experience_data['order'] = (max_doc.get('order', 0) + 1) if max_doc else 0
             db.experience.insert_one(experience_data)
             
         return redirect('admin_experience')
