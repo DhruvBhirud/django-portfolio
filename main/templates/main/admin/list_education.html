@@ -1,4 +1,5 @@
 {% extends 'main/admin/base_admin.html' %}
+{% load static %}
 {% block content %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
     <h2>Manage Education</h2>
@@ -15,7 +16,7 @@
                 <th>Actions</th>
             </tr>
         </thead>
-        <tbody id="sortable-body">
+        <tbody class="sortable-list" data-reorder-url="{% url 'admin_education_reorder' %}">
             {% for edu in education_list %}
             <tr data-id="{{ edu.id }}">
                 <td>
@@ -44,31 +45,5 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var el = document.getElementById('sortable-body');
-        var sortable = Sortable.create(el, {
-            handle: '.handle',
-            animation: 150,
-            onEnd: function () {
-                var order = [];
-                el.querySelectorAll('tr[data-id]').forEach(function(row) {
-                    order.push(row.getAttribute('data-id'));
-                });
-                
-                fetch('{% url "admin_education_reorder" %}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(order)
-                }).then(response => {
-                    if(!response.ok) {
-                        alert('Error saving order');
-                    }
-                });
-            }
-        });
-    });
-</script>
+<script src="{% static 'js/admin_sortable.js' %}"></script>
 {% endblock %}

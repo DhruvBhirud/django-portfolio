@@ -1,4 +1,5 @@
 {% extends 'main/admin/base_admin.html' %}
+{% load static %}
 {% block content %}
     <h1>Manage Skills</h1>
     
@@ -52,7 +53,7 @@
                     <th style="width: 150px;">Actions</th>
                 </tr>
             </thead>
-            <tbody id="sortable-skills">
+            <tbody class="sortable-list" data-reorder-url="{% url 'admin_skills_reorder' %}">
                 {% for skill in skills %}
                 <tr data-id="{{ skill.id }}">
                     <td>
@@ -85,58 +86,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            var el = document.getElementById('sortable-skills');
-            if (el) {
-                var sortable = Sortable.create(el, {
-                    handle: '.fa-grip-vertical',
-                    animation: 150,
-                    onEnd: function (evt) {
-                        var itemEl = evt.item; 
-                        var activeOrder = [];
-                        el.querySelectorAll('tr[data-id]').forEach(function(row) {
-                            activeOrder.push(row.getAttribute('data-id'));
-                        });
-                        
-                        fetch("{% url 'admin_skills_reorder' %}", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
-                            body: JSON.stringify(activeOrder)
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status !== 'success') {
-                                console.error("Error saving sort order", data);
-                                alert("Failed to save reordered list.");
-                            }
-                        });
-                    }
-                });
-            }
-        });
-    </script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            fetch('https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.json')
-            .then(response => response.json())
-            .then(data => {
-                const datalist = document.getElementById('devicon-list');
-                data.forEach(icon => {
-                    if (icon.versions && icon.versions.font && icon.versions.font.length > 0) {
-                        let version = icon.versions.font.includes('plain') ? 'plain' : icon.versions.font[0];
-                        let className = `devicon-${icon.name}-${version} colored`;
-                        let option = document.createElement('option');
-                        option.value = className;
-                        // Provide a recognizable display name for the dropdown natively
-                        option.textContent = icon.name.charAt(0).toUpperCase() + icon.name.slice(1);
-                        datalist.appendChild(option);
-                    }
-                });
-            })
-            .catch(error => console.error("Error loading devicon JSON:", error));
-        });
-    </script>
+    <script src="{% static 'js/admin_sortable.js' %}"></script>
+    <script src="{% static 'js/admin_skills.js' %}"></script>
 {% endblock %}
