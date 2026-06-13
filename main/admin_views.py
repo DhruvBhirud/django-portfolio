@@ -68,6 +68,8 @@ def dashboard(request):
     blog_count = db.blogs.count_documents({})
     published_blog_count = db.blogs.count_documents({'is_published': True})
     skill_count = db.skills.count_documents({})
+    education_count = db.education.count_documents({})
+    experience_count = db.experience.count_documents({})
     
     # Calculate aggregate view statistics
     total_blog_views = sum(b.get('views', 0) for b in db.blogs.find({}, {'views': 1}))
@@ -160,6 +162,8 @@ def dashboard(request):
         'blog_count': blog_count,
         'published_blog_count': published_blog_count,
         'skill_count': skill_count,
+        'education_count': education_count,
+        'experience_count': experience_count,
         'homepage_views': homepage_views,
         'total_blog_views': total_blog_views,
         'total_project_views': total_project_views,
