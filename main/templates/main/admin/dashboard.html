@@ -82,6 +82,91 @@
             grid-template-columns: 1fr;
         }
     }
+    
+    .custom-dropdown {
+        position: relative;
+        width: 160px;
+        font-family: inherit;
+        user-select: none;
+    }
+    .custom-dropdown-selected {
+        background-color: #fff;
+        border: 1px solid #e1e8ed;
+        border-radius: 8px;
+        padding: 8px 14px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #2c3e50;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .custom-dropdown-selected:hover {
+        border-color: #bdc3c7;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .custom-dropdown.open .custom-dropdown-selected {
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+    }
+    .custom-dropdown.open .custom-dropdown-selected i {
+        transform: rotate(180deg);
+    }
+    .custom-dropdown-selected i {
+        transition: transform 0.3s ease;
+    }
+    .custom-dropdown-options {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 1px solid #e1e8ed;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        list-style: none;
+        padding: 6px;
+        margin: 0;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 100;
+    }
+    .custom-dropdown.open .custom-dropdown-options {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+    .custom-dropdown-options li {
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        color: #34495e;
+        cursor: pointer;
+        transition: background-color 0.2s ease, color 0.2s ease;
+        display: flex;
+        align-items: center;
+    }
+    .custom-dropdown-options li:hover {
+        background-color: #f1f5f8;
+        color: #2c3e50;
+    }
+    .custom-dropdown-options li.active {
+        background-color: #ebf5fb;
+        color: #3498db;
+        font-weight: 600;
+    }
+    .custom-dropdown-options li.active::after {
+        content: '\f00c';
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 900;
+        margin-left: auto;
+        font-size: 0.8rem;
+    }
 </style>
 
     <h1 style="color: #2c3e50; margin-bottom: 25px;">Dashboard Overview</h1>
@@ -151,11 +236,22 @@
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
                 <h3 style="margin: 0; color: #2c3e50;">Page Views Timeline</h3>
                 <div>
-                    <select id="timeRangeSelect" style="padding: 5px 10px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 0.9rem; cursor: pointer; width: auto; margin-bottom: 0;">
-                        <option value="7">Last 7 Days</option>
-                        <option value="15">Last 15 Days</option>
-                        <option value="30" selected>Last 30 Days</option>
-                    </select>
+                    <div class="custom-dropdown" id="timeRangeDropdown">
+                        <div class="custom-dropdown-selected" id="timeRangeSelected">
+                            Last 30 Days
+                            <i class="fas fa-chevron-down" style="font-size: 0.8rem; color: #7f8c8d;"></i>
+                        </div>
+                        <ul class="custom-dropdown-options" id="timeRangeOptions">
+                            <li data-value="7">Last 7 Days</li>
+                            <li data-value="15">Last 15 Days</li>
+                            <li data-value="30" class="active">Last 30 Days</li>
+                        </ul>
+                        <select id="timeRangeSelect" style="display: none;">
+                            <option value="7">Last 7 Days</option>
+                            <option value="15">Last 15 Days</option>
+                            <option value="30" selected>Last 30 Days</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div style="position: relative; height: 300px;">
@@ -541,6 +637,37 @@
             
             timeRangeSelect.addEventListener('change', updateChartTimeframe);
             
+            // Custom Dropdown Functionality
+            const dropdown = document.getElementById('timeRangeDropdown');
+            const selected = document.getElementById('timeRangeSelected');
+            const optionsList = document.getElementById('timeRangeOptions');
+            const options = optionsList.querySelectorAll('li');
+
+            selected.addEventListener('click', function(e) {
+                dropdown.classList.toggle('open');
+                e.stopPropagation();
+            });
+
+            options.forEach(option => {
+                option.addEventListener('click', function(e) {
+                    selected.innerHTML = this.textContent + ' <i class="fas fa-chevron-down" style="font-size: 0.8rem; color: #7f8c8d;"></i>';
+                    options.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    timeRangeSelect.value = this.dataset.value;
+                    timeRangeSelect.dispatchEvent(new Event('change'));
+                    
+                    dropdown.classList.remove('open');
+                    e.stopPropagation();
+                });
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!dropdown.contains(e.target)) {
+                    dropdown.classList.remove('open');
+                }
+            });
+
             // Initial triggering
             updateChartTimeframe();
         });
