@@ -1,9 +1,9 @@
 /* Import simple-datatables CSS so we don't have to load it in HTML */
 @import url('https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css');
 
-.dataTable-table > tbody > tr > td { padding: 16px; border-bottom: 1px solid #e2e8f0; }
+.dataTable-table > tbody > tr > td { padding: 16px; border-bottom: 1px solid #e2e8f0; font-size: 0.95rem; }
 .dataTable-table > thead > tr > th { color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; background: #f8fafc; padding: 16px; border-bottom: 1px solid #e2e8f0; }
-.dataTable-wrapper .dataTable-container { font-size: 0.95rem; }
+.dataTable-wrapper .dataTable-container { font-size: 0.95rem; border: none; }
 
 /* Modern Input Styling */
 .dataTable-input { 
@@ -12,55 +12,58 @@
 }
 .dataTable-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
 
-.dataTable-top { padding-bottom: 15px; }
-.dataTable-bottom { padding-top: 15px; }
+.dataTable-top { padding-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+.dataTable-bottom { padding-top: 15px; display: flex; justify-content: space-between; align-items: center; }
+.dataTable-info { color: #64748b; font-size: 0.9rem; }
 .dataTable-pagination a { color: #3b82f6; border-radius: 6px; }
 .dataTable-pagination a:hover { background-color: #eff6ff; }
 .dataTable-pagination .active a, .dataTable-pagination .active a:focus, .dataTable-pagination .active a:hover { background-color: #3b82f6; color: white; }
 
-/* Custom Dropdown Override for simple-datatables */
+/* Custom Dropdown Component */
 .custom-dropdown {
     position: relative;
-    width: 140px;
+    min-width: 80px;
     font-family: inherit;
     user-select: none;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
 }
 .custom-dropdown-selected {
     background-color: #fff;
-    border: 1px solid #e1e8ed;
+    border: 1px solid #cbd5e1;
     border-radius: 8px;
     padding: 8px 14px;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     font-weight: 500;
-    color: #2c3e50;
+    color: #334155;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 .custom-dropdown-selected:hover {
-    border-color: #bdc3c7;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border-color: #94a3b8;
 }
 .custom-dropdown.open .custom-dropdown-selected {
-    border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 .custom-dropdown.open .custom-dropdown-selected i {
     transform: rotate(180deg);
 }
 .custom-dropdown-selected i {
     transition: transform 0.3s ease;
+    margin-left: 10px;
 }
 .custom-dropdown-options {
     position: absolute;
-    top: calc(100% + 8px);
+    top: calc(100% + 4px);
     left: 0;
     right: 0;
     background: #fff;
-    border: 1px solid #e1e8ed;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     list-style: none;
@@ -70,7 +73,9 @@
     visibility: hidden;
     transform: translateY(-10px);
     transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    z-index: 100;
+    z-index: 1000;
+    max-height: 250px;
+    overflow-y: auto;
 }
 .custom-dropdown.open .custom-dropdown-options {
     opacity: 1;
@@ -80,25 +85,25 @@
 .custom-dropdown-options li {
     padding: 8px 12px;
     border-radius: 6px;
-    font-size: 0.9rem;
-    color: #34495e;
+    font-size: 0.95rem;
+    color: #475569;
     cursor: pointer;
     transition: background-color 0.2s ease, color 0.2s ease;
     display: flex;
     align-items: center;
 }
 .custom-dropdown-options li:hover {
-    background-color: #f1f5f8;
-    color: #2c3e50;
+    background-color: #f1f5f9;
+    color: #0f172a;
 }
 .custom-dropdown-options li.active {
-    background-color: #ebf5fb;
-    color: #3498db;
+    background-color: #eff6ff;
+    color: #3b82f6;
     font-weight: 600;
 }
 .custom-dropdown-options li.active::after {
     content: '\f00c';
-    font-family: 'Font Awesome 5 Free';
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free';
     font-weight: 900;
     margin-left: auto;
     font-size: 0.8rem;
