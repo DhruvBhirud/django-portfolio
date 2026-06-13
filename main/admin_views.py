@@ -409,7 +409,7 @@ def reorder_skills(request):
 @admin_required
 def list_projects(request):
     db = get_db()
-    projects = list(db.projects.find().sort('order', 1))
+    projects = list(db.projects.find().sort([('is_featured', -1), ('order', 1)]))
     for p in projects:
         p['id'] = str(p['_id'])
     return render(request, 'main/admin/list_projects.html', {'projects': projects})
@@ -461,6 +461,23 @@ def delete_project(request, project_id):
     if request.method == 'POST':
         db.projects.delete_one({'_id': ObjectId(project_id)})
     return redirect('admin_projects')
+
+@csrf_exempt
+@admin_required
+def reorder_projects(request):
+    if request.method == 'POST':
+        try:
+            db = get_db()
+            data = json.loads(request.body)
+            for index, project_id in enumerate(data):
+                db.projects.update_one(
+                    {'_id': ObjectId(project_id)},
+                    {'$set': {'order': index}}
+                )
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'invalid method'}, status=405)
 
 @admin_required
 def list_education(request):

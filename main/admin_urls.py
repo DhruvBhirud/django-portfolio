@@ -15,6 +15,7 @@ urlpatterns = [
     path('skills/edit/<str:skill_id>/', admin_views.edit_skill, name='admin_skill_edit'),
     path('skills/delete/<str:skill_id>/', admin_views.delete_skill, name='admin_skill_delete'),
     path('projects/', admin_views.list_projects, name='admin_projects'),
+    path('projects/reorder/', admin_views.reorder_projects, name='admin_projects_reorder'),
     path('projects/add/', admin_views.edit_project, name='admin_project_add'),
     path('projects/edit/<str:project_id>/', admin_views.edit_project, name='admin_project_edit'),
     path('projects/delete/<str:project_id>/', admin_views.delete_project, name='admin_project_delete'),
